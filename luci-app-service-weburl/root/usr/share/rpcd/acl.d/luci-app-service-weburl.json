@@ -1,0 +1,11 @@
+{
+  "luci-app-service-weburl": {
+    "description": "Grant UCI access for luci-app-service-weburl",
+    "read": {
+      "uci": [ "service_weburl" ]
+    },
+    "write": {
+      "uci": [ "service_weburl" ]
+    }
+  }
+}

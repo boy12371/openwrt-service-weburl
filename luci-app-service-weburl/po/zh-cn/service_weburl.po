@@ -1,0 +1,14 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Service WebUrl"
+msgstr "服务网址"
+
+msgid "Index"
+msgstr "首页"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Log"
+msgstr "日志"
