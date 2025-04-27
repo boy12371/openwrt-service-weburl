@@ -11,7 +11,7 @@ PKG_MAINTAINER:=richard <richard@sveil.com>
 LUCI_TITLE:=LuCI Support for service-weburl
 LUCI_DESCRIPTION:=Service WebUrl
 LUCI_PKGARCH:=all
-LUCI_DEPENDS:=+lua-sqlite3
+LUCI_DEPENDS:=
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
