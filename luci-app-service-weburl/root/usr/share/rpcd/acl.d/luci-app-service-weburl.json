@@ -5,7 +5,8 @@
       "uci": [ "service_weburl" ]
     },
     "write": {
-      "uci": [ "service_weburl" ]
+      "uci": [ "service_weburl" ],
+      "fs": [ "/etc/service_weburl/data.db" ]
     }
   }
 }

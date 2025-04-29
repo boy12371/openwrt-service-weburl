@@ -5,49 +5,68 @@ function index()
     if not nixio.fs.access("/etc/config/service_weburl") then return end
 
     -- 创建主菜单项（路径：Services -> service_weburl）
-    local page = entry({ "admin", "services", "service_weburl" }, alias("admin", "services", "service_weburl", "index"), _("Service WebUrl"), 10) -- 首页
+    local page = entry({ "admin", "services", "service_weburl" }, alias("admin", "services", "service_weburl", "index"), _("Service WebUrl"), 60)
     -- 依赖主模块
     page.dependent = true
     -- 依赖的 ACL 权限
     page.acl_depends = { "luci-app-service-weburl" }
 
-    -- 注册首页页面
-    entry({ "admin", "services", "service_weburl", "index" }, cbi("service_weburl/index"), _("Index"), 10).leaf = true
-    -- 注册设置页面
-    entry({ "admin", "services", "service_weburl", "settings" }, cbi("service_weburl/settings"), _("Settings"), 20).leaf = true
+    -- 注册首页服务列表页面
+    entry({ "admin", "services", "service_weburl", "index" }, cbi("service_weburl/index"), _("Service Index"), 10).leaf = true
+    -- 注册设置服务页面
+    entry({ "admin", "services", "service_weburl", "settings" }, cbi("service_weburl/settings"), _("Service Settings"), 20).leaf = true
+    entry({ "admin", "services", "service_weburl", "add"}, cbi("service_weburl/add"), _("Add Service"), 40).leaf = true
+    entry({ "admin", "services", "service_weburl", "edit"}, cbi("service_weburl/edit"), _("Edit Service"), 40).leaf = true
     -- 注册日志页面
-    entry({ "admin", "services", "service_weburl", "log" }, form("service_weburl/log"), _("Log"), 30).leaf = true
+    entry({ "admin", "services", "service_weburl", "log" }, form("service_weburl/log"), _("Service Log"), 30).leaf = true
     -- 注册 API 端点（无页面，仅处理请求）
-    -- entry({ "admin", "services", "service_weburl", "status" }, call("action_status")).leaf = true -- 运行状态
-    -- entry({ "admin", "services", "service_weburl", "logtail" }, call("action_logtail")).leaf = true -- 日志采集
-    -- entry({ "admin", "services", "service_weburl", "invalidate-cache" }, call("action_invalidate_cache")).leaf = true -- 清除缓存
+    entry({ "admin", "services", "service_weburl", "list" }, call("action_list")).leaf = true -- 运行状态
+    entry({ "admin", "services", "service_weburl", "delete"}, call("action_delete")).leaf = true
+    entry({ "admin", "services", "service_weburl", "logtail" }, call("action_logtail")).leaf = true -- 日志采集
+    entry({ "admin", "services", "service_weburl", "invalidate-cache" }, call("action_invalidate_cache")).leaf = true -- 清除缓存
 end
 
--- function action_status()
---     local e = {}
---     e.running = luci.sys.call("pidof service_weburl >/dev/null") == 0
---     e.application = luci.sys.exec("service_weburl --version")
---     luci.http.prepare_content("application/json")
---     luci.http.write_json(e)
--- end
+-- 数据列表
+function action_list()
+    local db = require "service_weburl.db"
+    local services = db.query_services()
+    luci.template.render("service_weburl/list", {services = services})
+end
 
--- function action_logtail()
---     local fs = require "nixio.fs"
---     local log_path = "/var/log/service_weburl.log"
---     local e = {}
---     e.running = luci.sys.call("pidof service_weburl >/dev/null") == 0
---     if fs.access(log_path) then
---         e.log = luci.sys.exec("tail -n 100 %s | sed 's/\\x1b\\[[0-9;]*m//g'" % log_path)
---     else
---         e.log = ""
---     end
---     luci.http.prepare_content("application/json")
---     luci.http.write_json(e)
--- end
+-- 编辑数据处理
+function action_edit(id)
+    if not tonumber(id) then
+        luci.http.status(400, "Invalid ID")
+        return
+    end
+    local db = require "service_weburl.db"
+    local service = db.get_service_by_id(id)
+    if not service then
+        luci.http.redirect(luci.dispatcher.build_url("admin/services/service_weburl"))
+        return
+    end
+    luci.template.render("service_weburl/edit", {service = service})
+end
 
--- function action_invalidate_cache()
---     local e = {}
---     e.ok = luci.sys.call("kill -HUP `pidof service_weburl`") == 0
---     luci.http.prepare_content("application/json")
---     luci.http.write_json(e)
--- end
+-- 删除处理
+function action_delete()
+    if not tonumber(id) then
+        luci.http.status(400, "Invalid ID")
+        return
+    end
+    local id = luci.http.formvalue("id")
+    local db = require "service_weburl.db"
+    local service = db.get_service_by_id(id)
+    if service then
+        db.delete_service(id)
+        luci.http.redirect(luci.dispatcher.build_url("admin/services/service_weburl"))
+    else
+        luci.http.status(404, "Service not found")
+    end
+end
+
+function action_logtail()
+    local db = require "service_weburl.db"
+    local logs = db.query_logs()
+    luci.template.render("service_weburl/log", {logs = logs})
+end

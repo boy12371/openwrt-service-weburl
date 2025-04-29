@@ -12,3 +12,18 @@ msgstr "设置"
 
 msgid "Log"
 msgstr "日志"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Confirm delete this service?"
+msgstr "确认删除此服务？"
+
+msgid "Save Changes"
+msgstr "保存修改"
+
+msgid "Edit Service"
+msgstr "编辑服务"

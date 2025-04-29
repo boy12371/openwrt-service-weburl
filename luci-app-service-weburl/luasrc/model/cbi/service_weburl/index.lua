@@ -1,7 +1,13 @@
 m = Map("service_weburl")
-m.title = translate("Service WebUrl")
-m.description = translate("<a href=\"https://github.com/messense/service-weburl\" target=\"_blank\">Project GitHub URL</a>")
+local db = require "service_weburl.db"
 
-m:section(SimpleSection).template = "service-weburl/index"
+m.title = translate("Service WebUrl")
+m.description = translate("Service Management Dashboard")
+
+local services = db.query_services()
+
+local section = m:section(SimpleSection)
+section.template = "service_weburl/index"
+section.services = services
 
 return m

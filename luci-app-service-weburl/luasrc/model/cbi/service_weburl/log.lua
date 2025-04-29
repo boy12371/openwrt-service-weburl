@@ -4,6 +4,6 @@ log.reset = false
 
 t = log:field(DummyValue, '', '')
 t.rawhtml = true
-t.template = 'service-weburl/logs'
+t.template = 'service_weburl/log'
 
 return log

@@ -1,12 +1,28 @@
 <%+cbi/valueheader%>
 <div class="cbi-map">
-    <h2>服务介绍</h2>
-    <div class="card">
-        <div class="card-body">
-            <h3>WebURL服务</h3>
-            <p>本插件用于管理与跳转自定义服务链接。</p>
-            <a href="<%=luci.dispatcher.build_url('admin/services/service-weburl/settings')%>" class="btn">配置服务</a>
+    <h2><%:Service List%></h2>
+    <% for _, service in ipairs(self.services) do %>
+    <div class="cbi-section">
+        <div class="cbi-section-descr">
+            <h3><%=service.title%></h3>
+            <p><%=service.description%></p>
+            <a href="<%=service.url%>" target="_blank" class="btn cbi-button-action"><%:Visit%></a>
+            <a href="<%=luci.dispatcher.build_url('admin/services/service_weburl/edit', service.id)%>" class="btn cbi-button-edit"><%:Edit Service%></a>
         </div>
     </div>
+    <button onclick="confirmDelete('<%=service.id%>')" class="btn cbi-button-delete"><%:Delete%></button>
+    <% end %>
+    <div class="cbi-page-actions">
+        <a href="<%=luci.dispatcher.build_url('admin/services/service_weburl/add')%>" class="cbi-button cbi-button-add"><%:Add New Service%></a>
+    </div>
 </div>
+<script>
+function confirmDelete(id) {
+if (confirm("<%:Confirm delete this service?%>")) {
+    XHR.post('<%=luci.dispatcher.build_url("admin/services/service_weburl/delete")%>', 
+             { id: id }, 
+             () => window.location.reload())
+}
+}
+</script>
 <%+cbi/valuefooter%>
