@@ -34,7 +34,7 @@ function action_list()
 end
 
 -- 编辑数据处理
-function action_edit(id)
+function action_edit()
     local id = luci.http.formvalue("id")
     if not id or not tonumber(id) then
         luci.http.status(400, "Invalid ID")
@@ -70,7 +70,7 @@ function action_logtail()
     local db = require "service_weburl.db"
     local logs = db.query_logs()
     local log_text = ""
-    for _, log in ipairs(logs) do
+    for _, log in pairs(logs) do
         log_text = log_text .. log.timestamp .. " [" .. log.action .. "] " .. log.message .. "\n"
     end
     luci.http.prepare_content("application/json")

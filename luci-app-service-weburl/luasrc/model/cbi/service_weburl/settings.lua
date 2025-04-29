@@ -21,8 +21,7 @@ log_retention.default = "7"
 -- 提交处理
 function m:handle(form, values)
     if values then
-        -- 保存配置到 UCI
-        self.uci:commit("service_weburl")
+        m.uci:commit("service_weburl")
     end
     return true
 end

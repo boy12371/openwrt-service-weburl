@@ -3,7 +3,7 @@
 
     <script type="text/javascript">
         const LOG_URL = '<%=luci.dispatcher.build_url("admin", "services", "service_weburl", "logtail")%>';
-        XHR.poll(1, LOG_URL, null, (x, d) => {
+        XHR.poll(30, LOG_URL, null, (x, d) => {
             let logview = document.getElementById("logview");
             if (!d.running) {
                 XHR.halt();

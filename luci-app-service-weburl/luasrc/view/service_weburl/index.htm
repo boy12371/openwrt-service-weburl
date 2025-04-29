@@ -21,7 +21,7 @@ function confirmDelete(id) {
 if (confirm("<%:Confirm delete this service?%>")) {
     XHR.post('<%=luci.dispatcher.build_url("admin/services/service_weburl/delete")%>', 
              { id: id }, 
-             () => window.location.reload())
+             () => location.reload())
 }
 }
 </script>
