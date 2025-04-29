@@ -27,3 +27,15 @@ msgstr "保存修改"
 
 msgid "Edit Service"
 msgstr "编辑服务"
+
+msgid "Application Settings"
+msgstr "应用设置"
+
+msgid "Enable Service"
+msgstr "启用服务"
+
+msgid "Log File Path"
+msgstr "日志文件路径"
+
+msgid "Log Retention Days"
+msgstr "日志保留天数"

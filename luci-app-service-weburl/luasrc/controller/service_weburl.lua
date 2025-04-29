@@ -14,13 +14,13 @@ function index()
     -- 注册首页服务列表页面
     entry({ "admin", "services", "service_weburl", "index" }, cbi("service_weburl/index"), _("Service Index"), 10).leaf = true
     -- 注册设置服务页面
-    entry({ "admin", "services", "service_weburl", "settings" }, cbi("service_weburl/settings"), _("Service Settings"), 20).leaf = true
-    entry({ "admin", "services", "service_weburl", "add"}, cbi("service_weburl/add"), _("Add Service"), 40).leaf = true
-    entry({ "admin", "services", "service_weburl", "edit"}, cbi("service_weburl/edit"), _("Edit Service"), 40).leaf = true
+    entry({ "admin", "services", "service_weburl", "settings" }, cbi("service_weburl/settings"), _("Application Settings"), 20).leaf = true
+    entry({ "admin", "services", "service_weburl", "add" }, cbi("service_weburl/add"), _("Add Service"), 30).leaf = true
     -- 注册日志页面
-    entry({ "admin", "services", "service_weburl", "log" }, form("service_weburl/log"), _("Service Log"), 30).leaf = true
+    entry({ "admin", "services", "service_weburl", "log" }, form("service_weburl/log"), _("Service Log"), 40).leaf = true
     -- 注册 API 端点（无页面，仅处理请求）
     entry({ "admin", "services", "service_weburl", "list" }, call("action_list")).leaf = true -- 运行状态
+    entry({ "admin", "services", "service_weburl", "edit"}, call("action_edit")).leaf = true
     entry({ "admin", "services", "service_weburl", "delete"}, call("action_delete")).leaf = true
     entry({ "admin", "services", "service_weburl", "logtail" }, call("action_logtail")).leaf = true -- 日志采集
     entry({ "admin", "services", "service_weburl", "invalidate-cache" }, call("action_invalidate_cache")).leaf = true -- 清除缓存
@@ -35,7 +35,8 @@ end
 
 -- 编辑数据处理
 function action_edit(id)
-    if not tonumber(id) then
+    local id = luci.http.formvalue("id")
+    if not id or not tonumber(id) then
         luci.http.status(400, "Invalid ID")
         return
     end
@@ -50,11 +51,11 @@ end
 
 -- 删除处理
 function action_delete()
-    if not tonumber(id) then
+    local id = luci.http.formvalue("id")
+    if not id or not tonumber(id) then
         luci.http.status(400, "Invalid ID")
         return
     end
-    local id = luci.http.formvalue("id")
     local db = require "service_weburl.db"
     local service = db.get_service_by_id(id)
     if service then
@@ -68,5 +69,10 @@ end
 function action_logtail()
     local db = require "service_weburl.db"
     local logs = db.query_logs()
-    luci.template.render("service_weburl/log", {logs = logs})
+    local log_text = ""
+    for _, log in ipairs(logs) do
+        log_text = log_text .. log.timestamp .. " [" .. log.action .. "] " .. log.message .. "\n"
+    end
+    luci.http.prepare_content("application/json")
+    luci.http.write_json({ log = log_text })
 end
