@@ -4,7 +4,7 @@ local db_conn = nil
 
 function M.init_db()
     if not db_conn then
-        db_conn = lsqlite3.open("/var/lib/service_weburl/data.db")
+        db_conn = lsqlite3.open("/etc/config/data.db")
         db_conn:exec[[
             CREATE TABLE IF NOT EXISTS services (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
