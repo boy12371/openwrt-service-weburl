@@ -6,11 +6,13 @@
         <div class="cbi-section-descr">
             <h3><%=service.title%></h3>
             <p><%=service.description%></p>
-            <a href="<%=service.url%>" target="_blank" class="btn cbi-button-action"><%:Visit%></a>
-            <a href="<%=luci.dispatcher.build_url('admin/services/service_weburl/edit', service.id)%>" class="btn cbi-button-edit"><%:Edit Service%></a>
+            <div class="cbi-section-actions">
+                <a href="<%=service.url%>" target="_blank" class="btn cbi-button-action"><%:Visit%></a>
+                <a href="<%=luci.dispatcher.build_url('admin/services/service_weburl/edit', service.id)%>" class="btn cbi-button-edit"><%:Edit%></a>
+                <button onclick="confirmDelete('<%=service.id%>')" class="btn cbi-button-remove"><%:Delete%></button>
+            </div>
         </div>
     </div>
-    <button onclick="confirmDelete('<%=service.id%>')" class="btn cbi-button-delete"><%:Delete%></button>
     <% end %>
     <div class="cbi-page-actions">
         <a href="<%=luci.dispatcher.build_url('admin/services/service_weburl/settings')%>" class="cbi-button cbi-button-settings"><%:Application Settings%></a>
@@ -18,11 +20,79 @@
 </div>
 <script>
 function confirmDelete(id) {
-if (confirm("<%:Confirm delete this service?%>")) {
-    XHR.post('<%=luci.dispatcher.build_url("admin/services/service_weburl/delete")%>', 
-             { id: id }, 
-             () => location.reload())
+    if (!confirm("<%:Are you sure you want to delete this service?%>")) {
+        return;
+    }
+
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "<%:Deleting...%>";
+
+    fetch('<%=luci.dispatcher.build_url("admin/services/service_weburl/delete")%>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: id })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showNotification("<%:Service deleted successfully%>", "success");
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            throw new Error(data.message || "<%:Failed to delete service%>");
+        }
+    })
+    .catch(error => {
+        showNotification(error.message || "<%:Failed to delete service%>", "error");
+        btn.disabled = false;
+        btn.textContent = originalText;
+    });
 }
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `cbi-notification cbi-notification-${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
 }
+
+// Add some basic styles for notifications
+const style = document.createElement('style');
+style.textContent = `
+.cbi-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px;
+    border-radius: 4px;
+    color: white;
+    z-index: 1000;
+    transition: opacity 0.5s;
+}
+.cbi-notification-success {
+    background-color: #4CAF50;
+}
+.cbi-notification-error {
+    background-color: #F44336;
+}
+.fade-out {
+    opacity: 0;
+}
+`;
+document.head.appendChild(style);
 </script>
 <%+cbi/valuefooter%>

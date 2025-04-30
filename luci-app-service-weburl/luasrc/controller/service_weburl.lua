@@ -26,58 +26,118 @@ function index()
     entry({ "admin", "services", "service_weburl", "invalidate-cache" }, call("action_invalidate_cache")).leaf = true -- 清除缓存
 end
 
+-- 统一API响应函数
+local function api_response(success, data, message, status)
+    luci.http.prepare_content("application/json")
+    luci.http.write_json({
+        success = success,
+        data = data or {},
+        message = message or "",
+        timestamp = os.time()
+    })
+    if not success and status then
+        luci.http.status(status)
+    end
+end
+
+-- 检查权限
+local function check_permission()
+    if not luci.dispatcher.authenticated then
+        api_response(false, nil, "Unauthorized", 401)
+        return false
+    end
+    return true
+end
+
 -- 数据列表
 function action_list()
+    if not check_permission() then return end
+    
     local db = require "service_weburl.db"
-    local services = db.query_services()
-    luci.template.render("service_weburl/list", {services = services})
+    local services, err = db.query_services()
+    if not services then
+        api_response(false, nil, "Failed to get services: "..tostring(err), 500)
+        return
+    end
+    api_response(true, {services = services})
 end
 
 -- 编辑数据处理
 function action_edit()
+    if not check_permission() then return end
+    
     local id = luci.http.formvalue("id")
     if not id or not tonumber(id) then
-        luci.http.status(400, "Invalid ID")
+        api_response(false, nil, "Invalid ID", 400)
         return
     end
+    
     local db = require "service_weburl.db"
-    local service = db.get_service_by_id(id)
+    local service, err = db.get_service_by_id(id)
     if not service then
-        luci.http.redirect(luci.dispatcher.build_url("admin/services/service_weburl"))
+        api_response(false, nil, "Service not found: "..tostring(err), 404)
         return
     end
-    luci.template.render("service_weburl/edit", {service = service})
+    
+    api_response(true, {service = service})
 end
 
 -- 删除处理
 function action_delete()
+    if not check_permission() then return end
+    
     local id = luci.http.formvalue("id")
     if not id or not tonumber(id) then
-        luci.http.status(400, "Invalid ID")
+        api_response(false, nil, "Invalid ID", 400)
         return
     end
+    
     local db = require "service_weburl.db"
-    local service = db.get_service_by_id(id)
-    if service then
-        db.delete_service(id)
-        luci.http.redirect(luci.dispatcher.build_url("admin/services/service_weburl"))
-    else
-        luci.http.status(404, "Service not found")
+    local service, err = db.get_service_by_id(id)
+    if not service then
+        api_response(false, nil, "Service not found", 404)
+        return
     end
+    
+    local success, err = db.delete_service(id)
+    if not success then
+        api_response(false, nil, "Failed to delete service: "..tostring(err), 500)
+        return
+    end
+    
+    api_response(true, nil, "Service deleted successfully")
 end
 
 function action_logtail()
+    if not check_permission() then return end
+    
     local db = require "service_weburl.db"
-    local logs = db.query_logs()
-    local log_text = ""
-    for _, log in pairs(logs) do
-        log_text = log_text .. log.timestamp .. " [" .. log.action .. "] " .. log.message .. "\n"
+    local logs, err = db.query_logs()
+    if not logs then
+        api_response(false, nil, "Failed to get logs: "..tostring(err), 500)
+        return
     end
-    luci.http.prepare_content("application/json")
-    luci.http.write_json({ log = log_text })
+    
+    local log_text = ""
+    for _, log in ipairs(logs) do
+        log_text = log_text .. log.timestamp .. " [" .. log.action .. "] " .. (log.message or "") .. "\n"
+    end
+    
+    api_response(true, {log = log_text})
 end
 
 function action_invalidate_cache()
-    os.execute("rm -f /tmp/service_weburl_cache")
-    luci.http.write_json({ ok = true })
+    if not check_permission() then return end
+    
+    local ok, err = pcall(function()
+        os.execute("rm -rf /tmp/service_weburl_cache*")
+        return true
+    end)
+    
+    if not ok then
+        api_response(false, nil, "Failed to clear cache: "..tostring(err), 500)
+        return
+    end
+    
+    api_response(true, nil, "Cache cleared successfully")
 end
