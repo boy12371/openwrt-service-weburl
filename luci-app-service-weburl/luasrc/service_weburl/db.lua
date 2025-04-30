@@ -36,7 +36,7 @@ function M.init_db()
         if not db_conn then
             error("Failed to open database: " .. tostring(err))
         end
-        
+
         -- 使用事务确保表创建原子性
         db_conn:exec("BEGIN TRANSACTION")
         
@@ -48,7 +48,7 @@ function M.init_db()
                 description TEXT CHECK(length(description) <= 1024),
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            ) WITHOUT ROWID;
+            );
             
             CREATE TABLE IF NOT EXISTS logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
