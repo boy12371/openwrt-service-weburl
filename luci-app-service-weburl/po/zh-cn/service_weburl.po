@@ -39,3 +39,6 @@ msgstr "日志文件路径"
 
 msgid "Log Retention Days"
 msgstr "日志保留天数"
+
+msgid "Invalidate cache"
+msgstr "清除缓存"

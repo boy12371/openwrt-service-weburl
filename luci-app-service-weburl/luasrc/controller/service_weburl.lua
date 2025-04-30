@@ -76,3 +76,8 @@ function action_logtail()
     luci.http.prepare_content("application/json")
     luci.http.write_json({ log = log_text })
 end
+
+function action_invalidate_cache()
+    os.execute("rm -f /tmp/service_weburl_cache")
+    luci.http.write_json({ ok = true })
+end

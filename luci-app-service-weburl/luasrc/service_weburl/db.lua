@@ -3,7 +3,7 @@ local M = {}
 local db_conn = nil
 
 function M.init_db()
-    if not db_conn then
+    local ok, err = pcall(function()
         db_conn = lsqlite3.open("/etc/config/data.db")
         db_conn:exec[[
             CREATE TABLE IF NOT EXISTS services (
@@ -19,6 +19,10 @@ function M.init_db()
                 message TEXT
             );
         ]]
+    end)
+    if not ok then
+        luci.logger:error("DB初始化失败: " .. tostring(err))
+        return nil, err
     end
 end
 
