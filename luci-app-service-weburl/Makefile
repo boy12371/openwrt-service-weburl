@@ -15,4 +15,10 @@ LUCI_DEPENDS:=+libsqlite3
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
+# Install service_weburl module files
+define Package/$(PKG_NAME)/install
+	$(INSTALL_DIR) $(1)/usr/lib/lua/service_weburl
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/luasrc/service_weburl/db.lua $(1)/usr/lib/lua/service_weburl/
+endef
+
 # call BuildPackage - OpenWrt buildroot signature

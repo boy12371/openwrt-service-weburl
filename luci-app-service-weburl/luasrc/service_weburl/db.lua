@@ -1,5 +1,8 @@
+module("service_weburl.db", package.seeall)
+
 local lsqlite3 = require "lsqlite3"
-local M = {}
+local nixio = require "nixio"
+local util = require "luci.util"
 local db_conn = nil
 local MAX_CONNECTION_ATTEMPTS = 3
 local CONNECTION_RETRY_DELAY = 1 -- seconds
@@ -21,7 +24,7 @@ local function connect_with_retry()
         end
         
         attempts = attempts + 1
-        luci.logger:warning(string.format("DB connection attempt %d failed: %s", attempts, tostring(err)))
+        util.perror(string.format("DB connection attempt %d failed: %s", attempts, tostring(err)))
         os.execute("sleep " .. CONNECTION_RETRY_DELAY)
     end
     
