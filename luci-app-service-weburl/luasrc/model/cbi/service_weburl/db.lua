@@ -39,47 +39,8 @@ function M.init_db()
         if not db_conn then
             error("Failed to open database: " .. tostring(err))
         end
-
-        -- 使用事务确保表创建原子性
-        db_conn:exec("BEGIN TRANSACTION")
-        
-        local create_tables = [[
-            CREATE TABLE IF NOT EXISTS services (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL CHECK(length(title) <= 255),
-                url TEXT NOT NULL CHECK(length(url) <= 1024),
-                description TEXT CHECK(length(description) <= 1024),
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-            
-            CREATE TABLE IF NOT EXISTS logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                action TEXT NOT NULL CHECK(length(action) <= 50),
-                message TEXT CHECK(length(message) <= 1024),
-                service_id INTEGER REFERENCES services(id) ON DELETE CASCADE
-            );
-            
-            CREATE INDEX IF NOT EXISTS idx_services_updated ON services(updated_at);
-            CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp);
-            CREATE INDEX IF NOT EXISTS idx_logs_service ON logs(service_id);
-            
-            CREATE TRIGGER IF NOT EXISTS update_service_timestamp 
-            AFTER UPDATE ON services 
-            BEGIN
-                UPDATE services SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
-            END;
-        ]]
-        
-        local ok, err = db_conn:exec(create_tables)
-        if not ok then
-            error("Failed to create tables: " .. tostring(err))
-        end
-        
-        db_conn:exec("COMMIT")
     end)
-    
+
     if not ok then
         luci.logger:error("DB initialization failed: " .. tostring(err))
         if db_conn then
