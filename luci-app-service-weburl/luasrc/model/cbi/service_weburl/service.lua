@@ -60,8 +60,8 @@ function M.add_service(title, url, description)
     if not valid then return nil, err end
     
     -- 添加到数据库
-    local ok, err = db.add_service(title, url, description)
-    if not ok then
+    local service_id, err = db.add_service(title, url, description)
+    if not service_id then
         log.log(log.LEVEL.ERROR, "add_service_failed", {
             title = title,
             url = url,
@@ -73,12 +73,8 @@ function M.add_service(title, url, description)
     -- 清除缓存
     cache.services = nil
     
-    log.log(log.LEVEL.INFO, "service_added", {
-        title = title,
-        url = url
-    })
-    
-    return true
+    -- 日志已在db.add_service中记录
+    return service_id
 end
 
 -- 获取所有服务
@@ -152,14 +148,7 @@ function M.update_service(id, title, url, description)
     -- 清除缓存
     cache.services = nil
     
-    log.log(log.LEVEL.INFO, "service_updated", {
-        id = id,
-        old_title = service.title,
-        old_url = service.url,
-        new_title = title,
-        new_url = url
-    })
-    
+    -- 日志已在db.update_service中记录
     return true
 end
 
@@ -184,12 +173,7 @@ function M.delete_service(id)
     -- 清除缓存
     cache.services = nil
     
-    log.log(log.LEVEL.INFO, "service_deleted", {
-        id = id,
-        title = service.title,
-        url = service.url
-    })
-    
+    -- 日志已在db.delete_service中记录
     return true
 end
 

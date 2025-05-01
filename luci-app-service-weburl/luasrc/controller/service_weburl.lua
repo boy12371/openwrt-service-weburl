@@ -86,15 +86,19 @@ function action_add_service()
     local description = http.formvalue("description")
     
     -- 添加服务
-    local ok, err = service.add_service(title, url, description)
-    if not ok then
+    local service_id, err = service.add_service(title, url, description)
+    if not service_id then
         http.status(400, err or "添加服务失败")
         return
     end
     
     -- 返回成功响应
     http.prepare_content("application/json")
-    http.write_json({success = true, message = "服务添加成功"})
+    http.write_json({
+        success = true, 
+        message = "服务添加成功",
+        service_id = service_id
+    })
 end
 
 -- 更新服务处理
@@ -117,7 +121,10 @@ function action_update_service()
     
     -- 返回成功响应
     http.prepare_content("application/json")
-    http.write_json({success = true, message = "服务更新成功"})
+    http.write_json({
+        success = true, 
+        message = "服务更新成功"
+    })
 end
 
 -- 删除服务处理
@@ -137,7 +144,10 @@ function action_delete_service()
     
     -- 返回成功响应
     http.prepare_content("application/json")
-    http.write_json({success = true, message = "服务删除成功"})
+    http.write_json({
+        success = true, 
+        message = "服务删除成功"
+    })
 end
 
 -- 日志查看页

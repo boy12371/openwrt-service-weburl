@@ -70,8 +70,8 @@ msgstr "时间"
 msgid "Operation Type"
 msgstr "操作类型"
 
-msgid "Operation Content"
-msgstr "操作内容"
+msgid "Related Service"
+msgstr "关联服务"
 
 msgid "Operation"
 msgstr "操作"
@@ -87,6 +87,9 @@ msgstr "关闭"
 
 msgid "Operation Time"
 msgstr "操作时间"
+
+msgid "Related Service ID"
+msgstr "关联服务ID"
 
 msgid "Operation Details"
 msgstr "操作详情"
@@ -138,3 +141,15 @@ msgstr "服务URL不能为空"
 
 msgid "URL must start with http:// or https://"
 msgstr "URL必须以http://或https://开头"
+
+msgid "Creation Time"
+msgstr "创建时间"
+
+msgid "Update Time"
+msgstr "更新时间"
+
+msgid "No related service"
+msgstr "无关联服务"
+
+msgid "Service ID"
+msgstr "服务ID"

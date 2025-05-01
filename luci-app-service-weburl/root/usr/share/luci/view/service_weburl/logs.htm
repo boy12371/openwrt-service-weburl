@@ -21,7 +21,7 @@
         <div class="tr table-titles">
             <div class="th"><%:时间%></div>
             <div class="th"><%:操作类型%></div>
-            <div class="th"><%:操作内容%></div>
+            <div class="th"><%:关联服务%></div>
             <div class="th"><%:操作%></div>
         </div>
         
@@ -32,11 +32,15 @@
         <% else %>
             <% for i, log in ipairs(logs) do %>
             <div class="tr">
-                <div class="td"><%=os.date("%Y-%m-%d %H:%M:%S", log.created_at)%></div>
+                <div class="td"><%=os.date("%Y-%m-%d %H:%M:%S", log.timestamp)%></div>
                 <div class="td"><%=pcdata(log.action)%></div>
                 <div class="td">
-                    <% if log.data and type(log.data) == "table" then %>
-                        <%=pcdata(log.data.title or log.data.id or '')%>
+                    <% if log.service_id then %>
+                    <a href="<%=url('admin/services/settings?id='..log.service_id)%>">
+                        <%:服务ID%> <%=log.service_id%>
+                    </a>
+                    <% else %>
+                    <em><%:无关联服务%></em>
                     <% end %>
                 </div>
                 <div class="td">
@@ -71,7 +75,7 @@
         <div class="cbi-modal-header">
             <h3><%:日志详情%></h3>
             <button class="btn cbi-button-close" onclick="hideLogDetails()">&times;</button>
-        </div>
+        </div>div>
         <div class="cbi-modal-body" id="log-details-content">
             <!-- 日志详情内容将在这里动态加载 -->
         </div>
@@ -88,14 +92,20 @@ function showLogDetails(logJson) {
         var log = JSON.parse(logJson);
         var content = '<div class="log-details">';
         
-        content += '<p><strong><%:操作时间%>:</strong> ' + new Date(log.created_at * 1000).toLocaleString() + '</p>';
+        content += '<p><strong><%:操作时间%>:</strong> ' + new Date(log.timestamp * 1000).toLocaleString() + '</p>';
         content += '<p><strong><%:操作类型%>:</strong> ' + log.action + '</p>';
         
-        if (log.data && typeof log.data === 'object') {
+        if (log.service_id) {
+            content += '<p><strong><%:关联服务ID%>:</strong> ' + 
+                      '<a href="<%=url("admin/services/settings?id=")%>' + log.service_id + '">' + 
+                      log.service_id + '</a></p>';
+        }
+        
+        if (log.message && typeof log.message === 'object') {
             content += '<p><strong><%:操作详情%>:</strong></p>';
-            content += '<pre>' + JSON.stringify(log.data, null, 2) + '</pre>';
-        } else if (log.data) {
-            content += '<p><strong><%:操作数据%>:</strong> ' + log.data + '</p>';
+            content += '<pre>' + JSON.stringify(log.message, null, 2) + '</pre>';
+        } else if (log.message) {
+            content += '<p><strong><%:操作数据%>:</strong> ' + log.message + '</p>';
         }
         
         content += '</div>';

@@ -1,86 +1,74 @@
-# LuCI Service WebURL Application
+# LuCI Service WebURL 应用
 
-A LuCI web interface for managing service URLs with SQLite backend on OpenWrt.
+![Service WebURL 界面截图](screenshots/service-list.png)
 
-## Features
+## 功能特性
 
-- **Service Management**: Add, edit, delete and view service URLs
-- **Log System**: Record all operations with timestamps
-- **Responsive Design**: Works on both desktop and mobile
-- **Internationalization**: Support for multiple languages
-- **Secure**: Input validation and SQL injection protection
+- **服务管理**
+  - 添加/编辑/删除服务
+  - 服务URL验证
+  - 服务描述支持
 
-## Screenshots
+- **日志系统**
+  - 操作日志记录
+  - 时间范围筛选
+  - 服务关联日志
 
-![Service List](screenshots/service-list.png)
-![Service Settings](screenshots/service-settings.png)
-![Operation Logs](screenshots/operation-logs.png)
+- **系统配置**
+  - 数据库路径配置
+  - 日志保留天数
+  - 缓存时间设置
 
-## Installation
+## 安装指南
 
-1. Ensure you have a working OpenWrt system
-2. Install dependencies:
-   ```bash
-   opkg update
-   opkg install lsqlite3
-   ```
-3. Install the application:
-   ```bash
-   # For development
-   cp -r luci-app-service-weburl /usr/lib/lua/luci/
-   # Or create an IPK package and install it
-   make package/luci-app-service-weburl/compile V=99
-   ```
+详见 [INSTALL.md](INSTALL.md)
 
-## Configuration
+## 快速开始
 
-Main configuration file: `/etc/config/service_weburl`
+1. 访问 `服务 > 服务管理`
+2. 添加新服务：
+   - 标题: My Service
+   - URL: https://example.com
+   - 描述: 示例服务
 
-```bash
-config main
-    option enabled '1'
-    option db_path '/var/lib/service_weburl.db'
-    option log_retention_days '30'
-```
+3. 查看操作日志
 
-## Usage
+## 开发指南
 
-1. Access the LuCI web interface
-2. Navigate to: `Services > Service Management`
-3. Use the interface to manage your service URLs
-
-## Development
-
-### Dependencies
-
-- OpenWrt SDK
-- lsqlite3
-- LuCI base libraries
-
-### Build
-
-```bash
-make -C path/to/openwrt/sdk package/luci-app-service-weburl/compile
-```
-
-### File Structure
+### 项目结构
 
 ```
 luci-app-service-weburl/
-├── luasrc/                # Lua source code
-│   ├── controller/        # MVC controllers
-│   └── model/             # Data models
-├── po/                    # Translation files
-├── root/                  # System files
-│   ├── etc/              # Configuration
-│   └── usr/              # Runtime files
-└── Makefile               # Build configuration
+├── luasrc/                # Lua 源代码
+├── po/                    # 国际化文件
+├── root/                  # 系统文件
+├── tests/                 # 测试代码
+├── Makefile               # 构建配置
+└── README.md              # 项目文档
 ```
 
-## License
+### 依赖管理
 
-MIT
+核心依赖：
+- lsqlite3
+- luci-lib-json
+- luci-base
 
-## Author
+### 测试运行
 
-Your Name <your.email@example.com>
+```bash
+cd tests
+lua test_service_weburl.lua
+```
+
+## 贡献指南
+
+1. Fork 项目仓库
+2. 创建特性分支 (`git checkout -b feature`)
+3. 提交更改 (`git commit -am 'Add feature'`)
+4. 推送分支 (`git push origin feature`)
+5. 创建 Pull Request
+
+## 许可证
+
+MIT 许可证

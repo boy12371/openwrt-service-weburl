@@ -32,6 +32,12 @@
                     <% if service.description and #service.description > 0 then %>
                     <p><%=pcdata(service.description)%></p>
                     <% end %>
+                    <div class="service-meta">
+                        <span><%:创建时间%>: <%=os.date("%Y-%m-%d %H:%M", service.created_at)%></span>
+                        <% if service.updated_at and service.updated_at ~= service.created_at then %>
+                        <span><%:更新时间%>: <%=os.date("%Y-%m-%d %H:%M", service.updated_at)%></span>
+                        <% end %>
+                    </div>
                     <a href="<%=pcdata(service.url)%>" target="_blank" class="btn"><%:访问服务%></a>
                 </div>
                 <div class="td cbi-section-actions">
@@ -70,7 +76,8 @@ function confirmDelete(id, title) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },            body: 'id=' + encodeURIComponent(id)
+            },
+            body: 'id=' + encodeURIComponent(id)
         })
         .then(response => response.json())
         .then(data => {

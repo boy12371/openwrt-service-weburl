@@ -11,8 +11,8 @@ M.LEVEL = {
     ERROR = "ERROR"
 }
 
--- 记录日志
-function M.log(level, action, data)
+-- 记录日志（支持关联服务ID）
+function M.log(level, action, data, service_id)
     if not M.LEVEL[level] then
         level = M.LEVEL.INFO
     end
@@ -23,32 +23,41 @@ function M.log(level, action, data)
         data = data
     }
     
-    return db.log_action(action, log_data)
+    return db.log_action(action, json.encode(log_data), service_id)
 end
 
--- 查询日志
+-- 查询日志（支持多种筛选条件）
 function M.query_logs(options)
     options = options or {}
     local where = {}
     local params = {}
     
+    -- 按服务ID筛选
+    if options.service_id then
+        table.insert(where, "service_id = ?")
+        table.insert(params, options.service_id)
+    end
+    
+    -- 按操作类型筛选
     if options.action then
         table.insert(where, "action = ?")
         table.insert(params, options.action)
     end
     
+    -- 按日志级别筛选
     if options.level then
-        table.insert(where, "json_extract(data, '$.level') = ?")
+        table.insert(where, "json_extract(message, '$.level') = ?")
         table.insert(params, options.level)
     end
     
+    -- 按时间范围筛选
     if options.start_time then
-        table.insert(where, "created_at >= ?")
+        table.insert(where, "timestamp >= ?")
         table.insert(params, os.date("%Y-%m-%d %H:%M:%S", options.start_time))
     end
     
     if options.end_time then
-        table.insert(where, "created_at <= ?")
+        table.insert(where, "timestamp <= ?")
         table.insert(params, os.date("%Y-%m-%d %H:%M:%S", options.end_time))
     end
     
@@ -56,58 +65,41 @@ function M.query_logs(options)
     local limit_clause = options.limit and "LIMIT " .. options.limit or ""
     local offset_clause = options.offset and "OFFSET " .. options.offset or ""
     
-    local db_conn = db.get_db()
-    if not db_conn then return nil, "Database not available" end
-    
-    local sql = string.format("SELECT * FROM logs %s ORDER BY created_at DESC %s %s",
-        where_clause, limit_clause, offset_clause)
-    
-    local stmt = db_conn:prepare(sql)
-    if not stmt then
-        db_conn:close()
-        return nil, "Failed to prepare statement"
+    -- 获取日志数据
+    local result = db.get_logs(options.service_id, options.limit)
+    if not result then
+        return nil, "Failed to query logs"
     end
     
-    for i, param in ipairs(params) do
-        stmt:bind(i, param)
-    end
-    
+    -- 处理日志数据
     local logs = {}
-    while stmt:step() == sqlite.ROW do
-        local log = {
-            id = stmt:get_value(0),
-            action = stmt:get_value(1),
-            data = stmt:get_value(2),
-            created_at = stmt:get_value(3)
-        }
-        
-        if log.data and log.data ~= "" then
-            log.data = json.parse(log.data)
+    for _, log in ipairs(result) do
+        if log.message then
+            log.message = json.parse(log.message)
         end
-        
         table.insert(logs, log)
     end
     
-    stmt:finalize()
-    
-    -- 获取总数用于分页
+    -- 如果需要总数，单独查询
     local total = 0
     if options.need_total then
-        local count_sql = string.format("SELECT COUNT(*) FROM logs %s", where_clause)
-        local count_stmt = db_conn:prepare(count_sql)
-        if count_stmt then
-            for i, param in ipairs(params) do
-                count_stmt:bind(i, param)
+        local db_conn = db.get_db()
+        if db_conn then
+            local sql = string.format("SELECT COUNT(*) FROM logs %s", where_clause)
+            local stmt = db_conn:prepare(sql)
+            if stmt then
+                for i, param in ipairs(params) do
+                    stmt:bind(i, param)
+                end
+                
+                if stmt:step() == sqlite.ROW then
+                    total = stmt:get_value(0)
+                end
+                stmt:finalize()
             end
-            
-            if count_stmt:step() == sqlite.ROW then
-                total = count_stmt:get_value(0)
-            end
-            count_stmt:finalize()
+            db_conn:close()
         end
     end
-    
-    db_conn:close()
     
     return {
         logs = logs,
@@ -115,7 +107,7 @@ function M.query_logs(options)
     }
 end
 
--- 清理旧日志
+-- 清理旧日志（保留最近N天的日志）
 function M.clean_old_logs(days)
     days = tonumber(days) or 30
     local cutoff_time = os.time() - (days * 24 * 60 * 60)
@@ -124,7 +116,7 @@ function M.clean_old_logs(days)
     local db_conn = db.get_db()
     if not db_conn then return nil, "Database not available" end
     
-    local sql = "DELETE FROM logs WHERE created_at < ?"
+    local sql = "DELETE FROM logs WHERE timestamp < ?"
     local stmt = db_conn:prepare(sql)
     if not stmt then
         db_conn:close()

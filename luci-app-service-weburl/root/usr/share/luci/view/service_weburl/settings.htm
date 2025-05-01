@@ -1,7 +1,7 @@
 <%+header%>
 <h2><%=page_title%></h2>
 
-<form method="post" action="<%=url(is_edit and 'admin/services/update_service' or 'admin/services/add_service')%>" class="cbi-map">
+<form method="post" action="<%=url(is_edit and 'admin/services/update_service' or 'admin/services/add_service')%>" class="cbi-map" onsubmit="return validateForm()">
     <% if is_edit then %>
     <input type="hidden" name="id" value="<%=service.id%>" />
     <% end %>
@@ -97,13 +97,6 @@ function validateForm() {
 document.getElementById('service-title').addEventListener('input', updatePreview);
 document.getElementById('service-url').addEventListener('input', updatePreview);
 document.getElementById('service-description').addEventListener('input', updatePreview);
-
-// 表单提交验证
-document.querySelector('form').addEventListener('submit', function(e) {
-    if (!validateForm()) {
-        e.preventDefault();
-    }
-});
 
 // 初始化预览
 updatePreview();
