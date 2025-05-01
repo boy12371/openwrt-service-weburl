@@ -1,149 +1,177 @@
 module("luci.controller.service_weburl", package.seeall)
 
-local sqlite3 = require "lsqlite3"
-local util = require "luci.util"
-local http = require "luci.http"
-local json = require "luci.jsonc"
-
 function index()
-    entry({"admin", "services", "service_weburl"}, alias("admin", "services", "service_weburl", "index"), _("Service WebURL"), 60)
-    entry({"admin", "services", "service_weburl", "index"}, template("service_weburl/index"), _("Services List"), 1)
-    entry({"admin", "services", "service_weburl", "add"}, template("service_weburl/add"), _("Add Service"), 2)
-    entry({"admin", "services", "service_weburl", "log"}, template("service_weburl/log"), _("Logs"), 3)
+    local page
     
-    entry({"admin", "services", "service_weburl", "get_services"}, call("get_services"), nil)
-    entry({"admin", "services", "service_weburl", "add_service"}, call("add_service"), nil)
-    entry({"admin", "services", "service_weburl", "edit_service"}, call("edit_service"), nil)
-    entry({"admin", "services", "service_weburl", "delete_service"}, call("delete_service"), nil)
-    entry({"admin", "services", "service_weburl", "get_logs"}, call("get_logs"), nil)
+    -- 权限控制
+    page = entry({"admin", "services"}, firstchild(), _("服务管理"), 60)
+    page.dependent = false
+    
+    -- 服务列表页
+    entry({"admin", "services", "index"}, call("action_index"), _("服务列表"), 10)
+    
+    -- 服务设置页
+    entry({"admin", "services", "settings"}, call("action_settings"), _("服务设置"), 20)
+    
+    -- 日志查看页
+    entry({"admin", "services", "logs"}, call("action_logs"), _("操作日志"), 30)
+    
+    -- 表单提交处理
+    entry({"admin", "services", "add_service"}, post("action_add_service"))
+    entry({"admin", "services", "update_service"}, post("action_update_service"))
+    entry({"admin", "services", "delete_service"}, post("action_delete_service"))
 end
 
-local function log_action(action, details)
-    local db = sqlite3.open("/etc/service_weburl/data.db")
-    if db then
-        local stmt = db:prepare("INSERT INTO logs (action, details) VALUES (?, ?)")
-        stmt:bind_values(action, details)
-        stmt:step()
-        stmt:finalize()
-        db:close()
+-- 服务列表页
+function action_index()
+    local service = require "luci.model.cbi.service_weburl.service"
+    local http = require "luci.http"
+    local template = require "luci.template"
+    
+    -- 获取服务列表
+    local services, err = service.get_services()
+    if not services then
+        http.status(500, "获取服务列表失败: " .. (err or "未知错误"))
+        return
     end
+    
+    -- 准备模板数据
+    local data = {
+        services = services,
+        page_title = "服务列表"
+    }
+    
+    -- 渲染模板
+    template.render("service_weburl/index", data)
 end
 
-function get_services()
-    local db = sqlite3.open("/etc/service_weburl/data.db")
-    local result = {}
+-- 服务设置页
+function action_settings()
+    local http = require "luci.http"
+    local template = require "luci.template"
+    local service = require "luci.model.cbi.service_weburl.service"
     
-    if db then
-        for row in db:nrows("SELECT * FROM services ORDER BY created_at DESC") do
-            table.insert(result, row)
+    -- 获取查询参数
+    local id = http.formvalue("id")
+    local service_data
+    
+    -- 如果是编辑模式，获取服务数据
+    if id and id ~= "" then
+        service_data = service.get_service(id)
+        if not service_data then
+            http.redirect(luci.dispatcher.build_url("admin/services/index"))
+            return
         end
-        db:close()
     end
     
+    -- 准备模板数据
+    local data = {
+        service = service_data,
+        page_title = service_data and "编辑服务" or "添加服务",
+        is_edit = service_data and true or false
+    }
+    
+    -- 渲染模板
+    template.render("service_weburl/settings", data)
+end
+
+-- 添加服务处理
+function action_add_service()
+    local http = require "luci.http"
+    local service = require "luci.model.cbi.service_weburl.service"
+    
+    -- 获取表单数据
+    local title = http.formvalue("title")
+    local url = http.formvalue("url")
+    local description = http.formvalue("description")
+    
+    -- 添加服务
+    local ok, err = service.add_service(title, url, description)
+    if not ok then
+        http.status(400, err or "添加服务失败")
+        return
+    end
+    
+    -- 返回成功响应
     http.prepare_content("application/json")
-    http.write_json(result)
+    http.write_json({success = true, message = "服务添加成功"})
 end
 
-function add_service()
-    local post = http.formvalue()
-    local title = post.title
-    local url = post.url
-    local description = post.description or ""
+-- 更新服务处理
+function action_update_service()
+    local http = require "luci.http"
+    local service = require "luci.model.cbi.service_weburl.service"
     
-    if not title or not url then
-        http.prepare_content("application/json")
-        http.write_json({success = false, message = "Missing required fields"})
+    -- 获取表单数据
+    local id = http.formvalue("id")
+    local title = http.formvalue("title")
+    local url = http.formvalue("url")
+    local description = http.formvalue("description")
+    
+    -- 更新服务
+    local ok, err = service.update_service(id, title, url, description)
+    if not ok then
+        http.status(400, err or "更新服务失败")
         return
     end
     
-    local db = sqlite3.open("/etc/service_weburl/data.db")
-    if db then
-        local stmt = db:prepare("INSERT INTO services (title, url, description) VALUES (?, ?, ?)")
-        stmt:bind_values(title, url, description)
-        stmt:step()
-        stmt:finalize()
-        db:close()
-        
-        log_action("add", string.format("Added service: %s", title))
-        
-        http.prepare_content("application/json")
-        http.write_json({success = true})
-    else
-        http.prepare_content("application/json")
-        http.write_json({success = false, message = "Database error"})
-    end
-end
-
-function edit_service()
-    local post = http.formvalue()
-    local id = post.id
-    local title = post.title
-    local url = post.url
-    local description = post.description or ""
-    
-    if not id or not title or not url then
-        http.prepare_content("application/json")
-        http.write_json({success = false, message = "Missing required fields"})
-        return
-    end
-    
-    local db = sqlite3.open("/etc/service_weburl/data.db")
-    if db then
-        local stmt = db:prepare("UPDATE services SET title = ?, url = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
-        stmt:bind_values(title, url, description, id)
-        stmt:step()
-        stmt:finalize()
-        db:close()
-        
-        log_action("edit", string.format("Edited service: %s", title))
-        
-        http.prepare_content("application/json")
-        http.write_json({success = true})
-    else
-        http.prepare_content("application/json")
-        http.write_json({success = false, message = "Database error"})
-    end
-end
-
-function delete_service()
-    local post = http.formvalue()
-    local id = post.id
-    
-    if not id then
-        http.prepare_content("application/json")
-        http.write_json({success = false, message = "Missing service ID"})
-        return
-    end
-    
-    local db = sqlite3.open("/etc/service_weburl/data.db")
-    if db then
-        local stmt = db:prepare("DELETE FROM services WHERE id = ?")
-        stmt:bind_values(id)
-        stmt:step()
-        stmt:finalize()
-        db:close()
-        
-        log_action("delete", string.format("Deleted service ID: %s", id))
-        
-        http.prepare_content("application/json")
-        http.write_json({success = true})
-    else
-        http.prepare_content("application/json")
-        http.write_json({success = false, message = "Database error"})
-    end
-end
-
-function get_logs()
-    local db = sqlite3.open("/etc/service_weburl/data.db")
-    local result = {}
-    
-    if db then
-        for row in db:nrows("SELECT * FROM logs ORDER BY created_at DESC LIMIT 100") do
-            table.insert(result, row)
-        end
-        db:close()
-    end
-    
+    -- 返回成功响应
     http.prepare_content("application/json")
-    http.write_json(result)
+    http.write_json({success = true, message = "服务更新成功"})
+end
+
+-- 删除服务处理
+function action_delete_service()
+    local http = require "luci.http"
+    local service = require "luci.model.cbi.service_weburl.service"
+    
+    -- 获取要删除的服务ID
+    local id = http.formvalue("id")
+    
+    -- 删除服务
+    local ok, err = service.delete_service(id)
+    if not ok then
+        http.status(400, err or "删除服务失败")
+        return
+    end
+    
+    -- 返回成功响应
+    http.prepare_content("application/json")
+    http.write_json({success = true, message = "服务删除成功"})
+end
+
+-- 日志查看页
+function action_logs()
+    local http = require "luci.http"
+    local template = require "luci.template"
+    local log = require "luci.model.cbi.service_weburl.log"
+    
+    -- 获取查询参数
+    local page = tonumber(http.formvalue("page")) or 1
+    local page_size = 20
+    local offset = (page - 1) * page_size
+    
+    -- 获取日志
+    local result = log.query_logs({
+        limit = page_size,
+        offset = offset,
+        need_total = true
+    })
+    
+    if not result then
+        http.status(500, "获取日志失败")
+        return
+    end
+    
+    -- 准备模板数据
+    local data = {
+        logs = result.logs,
+        total = result.total,
+        page = page,
+        page_size = page_size,
+        page_title = "操作日志"
+    }
+    
+    -- 渲染模板
+    template.render("service_weburl/logs", data)
 end

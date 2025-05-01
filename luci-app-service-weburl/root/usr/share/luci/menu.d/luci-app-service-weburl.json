@@ -1,0 +1,45 @@
+{
+    "admin/services": {
+        "title": "Service Management",
+        "order": 60,
+        "action": {
+            "type": "firstchild"
+        },
+        "depends": {
+            "acl": ["luci-app-service-weburl"]
+        }
+    },
+    "admin/services/index": {
+        "title": "Service List",
+        "order": 10,
+        "action": {
+            "type": "view",
+            "path": "service_weburl/index"
+        },
+        "depends": {
+            "acl": ["luci-app-service-weburl"]
+        }
+    },
+    "admin/services/settings": {
+        "title": "Service Settings",
+        "order": 20,
+        "action": {
+            "type": "view",
+            "path": "service_weburl/settings"
+        },
+        "depends": {
+            "acl": ["luci-app-service-weburl"]
+        }
+    },
+    "admin/services/logs": {
+        "title": "Operation Logs",
+        "order": 30,
+        "action": {
+            "type": "view",
+            "path": "service_weburl/logs"
+        },
+        "depends": {
+            "acl": ["luci-app-service-weburl"]
+        }
+    }
+}

@@ -1,0 +1,140 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-service-weburl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Service Management"
+msgstr "服务管理"
+
+msgid "Service List"
+msgstr "服务列表"
+
+msgid "Service Settings"
+msgstr "服务设置"
+
+msgid "Operation Logs"
+msgstr "操作日志"
+
+msgid "Add Service"
+msgstr "添加服务"
+
+msgid "Edit Service"
+msgstr "编辑服务"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Visit Service"
+msgstr "访问服务"
+
+msgid "Service Title"
+msgstr "服务标题"
+
+msgid "Service URL"
+msgstr "服务URL"
+
+msgid "Service Description"
+msgstr "服务描述"
+
+msgid "No more than 100 characters"
+msgstr "不超过100个字符"
+
+msgid "Must start with http:// or https://"
+msgstr "必须以http://或https://开头"
+
+msgid "No more than 500 characters"
+msgstr "不超过500个字符"
+
+msgid "Live Preview"
+msgstr "实时预览"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Time Range"
+msgstr "时间范围"
+
+msgid "Filter"
+msgstr "筛选"
+
+msgid "Reset"
+msgstr "重置"
+
+msgid "Time"
+msgstr "时间"
+
+msgid "Operation Type"
+msgstr "操作类型"
+
+msgid "Operation Content"
+msgstr "操作内容"
+
+msgid "Operation"
+msgstr "操作"
+
+msgid "Details"
+msgstr "详情"
+
+msgid "Log Details"
+msgstr "日志详情"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Operation Time"
+msgstr "操作时间"
+
+msgid "Operation Details"
+msgstr "操作详情"
+
+msgid "Operation Data"
+msgstr "操作数据"
+
+msgid "No service data available"
+msgstr "暂无服务数据"
+
+msgid "Please fill in the service details"
+msgstr "请填写服务详细信息"
+
+msgid "All currently available service links"
+msgstr "当前所有可用的服务链接"
+
+msgid "Search services"
+msgstr "搜索服务"
+
+msgid "Enter keywords to search"
+msgstr "输入关键词搜索"
+
+msgid "System operation records, logs from the last 30 days will be retained"
+msgstr "系统操作记录，最近30天的日志将被保留"
+
+msgid "Page %d of %d"
+msgstr "第%d页，共%d页"
+
+msgid "Previous"
+msgstr "上一页"
+
+msgid "Next"
+msgstr "下一页"
+
+msgid "No log data available"
+msgstr "暂无日志数据"
+
+msgid "Failed to parse log"
+msgstr "解析日志失败"
+
+msgid "Please select at least one time filter condition"
+msgstr "请至少选择一个时间筛选条件"
+
+msgid "Service title cannot be empty"
+msgstr "服务标题不能为空"
+
+msgid "Service URL cannot be empty"
+msgstr "服务URL不能为空"
+
+msgid "URL must start with http:// or https://"
+msgstr "URL必须以http://或https://开头"

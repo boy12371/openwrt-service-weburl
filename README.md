@@ -1,120 +1,86 @@
-# LuCI Service WebURL
+# LuCI Service WebURL Application
 
-一个用于管理服务网址的 OpenWrt LuCI 应用。
+A LuCI web interface for managing service URLs with SQLite backend on OpenWrt.
 
-## 功能特点
+## Features
 
-- 服务网址的添加、编辑、删除管理
-- 支持服务描述和链接展示
-- 操作日志记录和查看
-- 响应式界面设计
-- 中文界面支持
+- **Service Management**: Add, edit, delete and view service URLs
+- **Log System**: Record all operations with timestamps
+- **Responsive Design**: Works on both desktop and mobile
+- **Internationalization**: Support for multiple languages
+- **Secure**: Input validation and SQL injection protection
 
-## 安装要求
+## Screenshots
 
-- OpenWrt 系统
-- LuCI Web 界面
-- SQLite3 支持
+![Service List](screenshots/service-list.png)
+![Service Settings](screenshots/service-settings.png)
+![Operation Logs](screenshots/operation-logs.png)
 
-## 依赖项
+## Installation
 
-- luci-base
-- luci-compat
-- sqlite3
+1. Ensure you have a working OpenWrt system
+2. Install dependencies:
+   ```bash
+   opkg update
+   opkg install lsqlite3
+   ```
+3. Install the application:
+   ```bash
+   # For development
+   cp -r luci-app-service-weburl /usr/lib/lua/luci/
+   # Or create an IPK package and install it
+   make package/luci-app-service-weburl/compile V=99
+   ```
 
-## 安装方法
+## Configuration
 
-### 从源码编译
-
-1. 将代码复制到 OpenWrt SDK 的 package 目录：
-
-```bash
-git clone https://github.com/your-username/luci-app-service-weburl.git package/luci-app-service-weburl
-```
-
-2. 选择要编译的软件包：
-
-```bash
-make menuconfig
-# 找到 LuCI -> Applications -> luci-app-service-weburl
-```
-
-3. 编译软件包：
+Main configuration file: `/etc/config/service_weburl`
 
 ```bash
-make package/luci-app-service-weburl/compile V=s
+config main
+    option enabled '1'
+    option db_path '/var/lib/service_weburl.db'
+    option log_retention_days '30'
 ```
 
-### 直接安装 IPK
+## Usage
 
-1. 下载 IPK 文件
-2. 通过 LuCI 界面上传并安装
-3. 或者使用 opkg 命令安装：
+1. Access the LuCI web interface
+2. Navigate to: `Services > Service Management`
+3. Use the interface to manage your service URLs
+
+## Development
+
+### Dependencies
+
+- OpenWrt SDK
+- lsqlite3
+- LuCI base libraries
+
+### Build
 
 ```bash
-opkg install luci-app-service-weburl_1.0.0_all.ipk
+make -C path/to/openwrt/sdk package/luci-app-service-weburl/compile
 ```
 
-## 使用说明
+### File Structure
 
-1. 安装完成后，在 LuCI 界面的"服务"菜单下可以找到"服务网址"选项
-2. 界面包含三个主要部分：
-   - 服务列表：显示所有已添加的服务
-   - 添加服务：添加新的服务网址
-   - 操作日志：查看所有操作记录
+```
+luci-app-service-weburl/
+├── luasrc/                # Lua source code
+│   ├── controller/        # MVC controllers
+│   └── model/             # Data models
+├── po/                    # Translation files
+├── root/                  # System files
+│   ├── etc/              # Configuration
+│   └── usr/              # Runtime files
+└── Makefile               # Build configuration
+```
 
-### 添加服务
+## License
 
-1. 点击"添加新服务"按钮
-2. 填写服务信息：
-   - 标题（必填）
-   - 网址（必填，需以 http:// 或 https:// 开头）
-   - 描述（可选）
-3. 点击"保存"按钮完成添加
+MIT
 
-### 编辑服务
+## Author
 
-1. 在服务列表中找到要编辑的服务
-2. 点击"编辑"按钮
-3. 修改相关信息
-4. 点击"保存"按钮完成编辑
-
-### 删除服务
-
-1. 在服务列表中找到要删除的服务
-2. 点击"删除"按钮
-3. 确认删除操作
-
-### 查看日志
-
-1. 点击"日志"标签页
-2. 可以查看所有操作记录
-3. 支持按操作类型筛选日志
-
-## 数据存储
-
-- 服务数据存储在 SQLite 数据库中
-- 数据库文件位置：/etc/service_weburl/data.db
-- 配置文件位置：/etc/config/service_weburl
-
-## 故障排除
-
-1. 如果界面无法加载：
-   - 检查 service_weburl 服务是否正在运行
-   - 检查数据库文件权限
-
-2. 如果无法添加服务：
-   - 确保填写了必要的信息
-   - 检查网址格式是否正确
-
-3. 如果日志无法显示：
-   - 检查数据库文件权限
-   - 确保数据库表结构正确
-
-## 许可证
-
-本项目采用 MIT 许可证。
-
-## 技术支持
-
-如有问题，请提交 Issue 到项目仓库。
+Your Name <your.email@example.com>
