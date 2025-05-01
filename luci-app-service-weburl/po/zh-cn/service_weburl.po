@@ -1,17 +1,44 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8\n"
 
-msgid "Service WebUrl"
+msgid "Service WebURL"
 msgstr "服务网址"
 
-msgid "Index"
-msgstr "首页"
+msgid "Services List"
+msgstr "服务列表"
 
-msgid "Settings"
-msgstr "设置"
+msgid "Add Service"
+msgstr "添加服务"
 
-msgid "Log"
-msgstr "日志"
+msgid "Edit Service"
+msgstr "编辑服务"
+
+msgid "Add New Service"
+msgstr "添加新服务"
+
+msgid "Operation Logs"
+msgstr "操作日志"
+
+msgid "Title"
+msgstr "标题"
+
+msgid "URL"
+msgstr "网址"
+
+msgid "Description"
+msgstr "描述"
+
+msgid "Time"
+msgstr "时间"
+
+msgid "Action"
+msgstr "操作"
+
+msgid "Details"
+msgstr "详情"
+
+msgid "ID"
+msgstr "编号"
 
 msgid "Edit"
 msgstr "编辑"
@@ -19,26 +46,41 @@ msgstr "编辑"
 msgid "Delete"
 msgstr "删除"
 
-msgid "Confirm delete this service?"
-msgstr "确认删除此服务？"
+msgid "Save"
+msgstr "保存"
 
-msgid "Save Changes"
-msgstr "保存修改"
+msgid "Cancel"
+msgstr "取消"
 
-msgid "Edit Service"
-msgstr "编辑服务"
+msgid "Loading..."
+msgstr "加载中..."
 
-msgid "Application Settings"
-msgstr "应用设置"
+msgid "No logs found"
+msgstr "没有找到日志"
 
-msgid "Enable Service"
-msgstr "启用服务"
+msgid "All Actions"
+msgstr "所有操作"
 
-msgid "Log File Path"
-msgstr "日志文件路径"
+msgid "Add"
+msgstr "添加"
 
-msgid "Log Retention Days"
-msgstr "日志保留天数"
+msgid "Are you sure you want to delete this service?"
+msgstr "确定要删除这个服务吗？"
 
-msgid "Invalidate cache"
-msgstr "清除缓存"
+msgid "Failed to delete service"
+msgstr "删除服务失败"
+
+msgid "Please enter a title"
+msgstr "请输入标题"
+
+msgid "Please enter a URL"
+msgstr "请输入网址"
+
+msgid "Please enter a valid URL starting with http:// or https://"
+msgstr "请输入以 http:// 或 https:// 开头的有效网址"
+
+msgid "Operation failed"
+msgstr "操作失败"
+
+msgid "Logs"
+msgstr "日志"

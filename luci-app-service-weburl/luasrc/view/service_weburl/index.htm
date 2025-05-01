@@ -1,98 +1,126 @@
-<%+cbi/valueheader%>
-<div class="cbi-map">
-    <h2><%:Service List%></h2>
-    <% for _, service in ipairs(self.services) do %>
-    <div class="cbi-section">
-        <div class="cbi-section-descr">
-            <h3><%=service.title%></h3>
-            <p><%=service.description%></p>
-            <div class="cbi-section-actions">
-                <a href="<%=service.url%>" target="_blank" class="btn cbi-button-action"><%:Visit%></a>
-                <a href="<%=luci.dispatcher.build_url('admin/services/service_weburl/edit', service.id)%>" class="btn cbi-button-edit"><%:Edit%></a>
-                <button onclick="confirmDelete('<%=service.id%>')" class="btn cbi-button-remove"><%:Delete%></button>
-            </div>
-        </div>
-    </div>
-    <% end %>
-    <div class="cbi-page-actions">
-        <a href="<%=luci.dispatcher.build_url('admin/services/service_weburl/settings')%>" class="cbi-button cbi-button-settings"><%:Application Settings%></a>
-    </div>
-</div>
-<script>
-function confirmDelete(id) {
-    if (!confirm("<%:Are you sure you want to delete this service?%>")) {
-        return;
+<%+header%>
+
+<script type="text/javascript">//<![CDATA[
+    window.addEventListener('load', function() {
+        loadServices();
+    });
+
+    function loadServices() {
+        XHR.get('<%=luci.dispatcher.build_url("admin", "services", "service_weburl", "get_services")%>', null,
+            function(x, data) {
+                if (data) {
+                    var serviceList = document.getElementById('service-list');
+                    serviceList.innerHTML = '';
+                    
+                    data.forEach(function(service) {
+                        var card = document.createElement('div');
+                        card.className = 'service-card';
+                        card.innerHTML = `
+                            <div class="service-header">
+                                <h3>${htmlEscape(service.title)}</h3>
+                                <div class="service-actions">
+                                    <button onclick="editService(${service.id})" class="btn cbi-button cbi-button-edit"><%:Edit%></button>
+                                    <button onclick="deleteService(${service.id})" class="btn cbi-button cbi-button-remove"><%:Delete%></button>
+                                </div>
+                            </div>
+                            <div class="service-content">
+                                <p>${htmlEscape(service.description || '')}</p>
+                                <a href="${htmlEscape(service.url)}" target="_blank" class="service-link">${htmlEscape(service.url)}</a>
+                            </div>
+                        `;
+                        serviceList.appendChild(card);
+                    });
+                }
+            }
+        );
     }
 
-    const btn = event.target;
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "<%:Deleting...%>";
+    function htmlEscape(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
 
-    fetch('<%=luci.dispatcher.build_url("admin/services/service_weburl/delete")%>', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: id })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+    function deleteService(id) {
+        if (confirm('<%:Are you sure you want to delete this service?%>')) {
+            XHR.post('<%=luci.dispatcher.build_url("admin", "services", "service_weburl", "delete_service")%>', 
+                { id: id },
+                function(x, data) {
+                    if (data && data.success) {
+                        loadServices();
+                    } else {
+                        alert('<%:Failed to delete service%>');
+                    }
+                }
+            );
         }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            showNotification("<%:Service deleted successfully%>", "success");
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            throw new Error(data.message || "<%:Failed to delete service%>");
-        }
-    })
-    .catch(error => {
-        showNotification(error.message || "<%:Failed to delete service%>", "error");
-        btn.disabled = false;
-        btn.textContent = originalText;
-    });
-}
+    }
 
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `cbi-notification cbi-notification-${type}`;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.classList.add('fade-out');
-        setTimeout(() => notification.remove(), 500);
-    }, 3000);
-}
+    function editService(id) {
+        window.location.href = '<%=luci.dispatcher.build_url("admin", "services", "service_weburl", "add")%>?id=' + id;
+    }
+//]]></script>
 
-// Add some basic styles for notifications
-const style = document.createElement('style');
-style.textContent = `
-.cbi-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px;
+<style>
+.service-card {
+    background: #fff;
+    border: 1px solid #e6e6e6;
     border-radius: 4px;
-    color: white;
-    z-index: 1000;
-    transition: opacity 0.5s;
+    margin-bottom: 1em;
+    padding: 1em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-.cbi-notification-success {
-    background-color: #4CAF50;
+
+.service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5em;
 }
-.cbi-notification-error {
-    background-color: #F44336;
+
+.service-header h3 {
+    margin: 0;
 }
-.fade-out {
-    opacity: 0;
+
+.service-actions {
+    display: flex;
+    gap: 0.5em;
 }
-`;
-document.head.appendChild(style);
-</script>
-<%+cbi/valuefooter%>
+
+.service-content {
+    color: #666;
+}
+
+.service-link {
+    display: inline-block;
+    margin-top: 0.5em;
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.service-link:hover {
+    text-decoration: underline;
+}
+
+.add-service-btn {
+    margin-bottom: 1em;
+}
+</style>
+
+<h2><%:Service WebURL%></h2>
+
+<div class="cbi-map">
+    <div class="cbi-section">
+        <div class="add-service-btn">
+            <a href="<%=luci.dispatcher.build_url("admin", "services", "service_weburl", "add")%>" class="btn cbi-button cbi-button-add"><%:Add New Service%></a>
+        </div>
+        <div id="service-list">
+            <em><%:Loading...%></em>
+        </div>
+    </div>
+</div>
+
+<%+footer%>

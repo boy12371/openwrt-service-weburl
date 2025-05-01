@@ -1,143 +1,149 @@
 module("luci.controller.service_weburl", package.seeall)
 
+local sqlite3 = require "lsqlite3"
+local util = require "luci.util"
+local http = require "luci.http"
+local json = require "luci.jsonc"
+
 function index()
-    -- 检查配置文件是否存在，不存在则不注册菜单
-    if not nixio.fs.access("/etc/config/service_weburl") then return end
-
-    -- 创建主菜单项（路径：Services -> service_weburl）
-    local page = entry({ "admin", "services", "service_weburl" }, alias("admin", "services", "service_weburl", "index"), _("Service WebUrl"), 60)
-    -- 依赖主模块
-    page.dependent = true
-    -- 依赖的 ACL 权限
-    page.acl_depends = { "luci-app-service-weburl" }
-
-    -- 注册首页服务列表页面
-    entry({ "admin", "services", "service_weburl", "index" }, cbi("service_weburl/index"), _("Service Index"), 10).leaf = true
-    -- 注册设置服务页面
-    entry({ "admin", "services", "service_weburl", "settings" }, cbi("service_weburl/settings"), _("Application Settings"), 20).leaf = true
-    entry({ "admin", "services", "service_weburl", "add" }, cbi("service_weburl/add"), _("Add Service"), 30).leaf = true
-    -- 注册日志页面
-    entry({ "admin", "services", "service_weburl", "log" }, form("service_weburl/log"), _("Service Log"), 40).leaf = true
-    -- 注册 API 端点（无页面，仅处理请求）
-    entry({ "admin", "services", "service_weburl", "list" }, call("action_list")).leaf = true -- 运行状态
-    entry({ "admin", "services", "service_weburl", "edit"}, call("action_edit")).leaf = true
-    entry({ "admin", "services", "service_weburl", "delete"}, call("action_delete")).leaf = true
-    entry({ "admin", "services", "service_weburl", "logtail" }, call("action_logtail")).leaf = true -- 日志采集
-    entry({ "admin", "services", "service_weburl", "invalidate-cache" }, call("action_invalidate_cache")).leaf = true -- 清除缓存
+    entry({"admin", "services", "service_weburl"}, alias("admin", "services", "service_weburl", "index"), _("Service WebURL"), 60)
+    entry({"admin", "services", "service_weburl", "index"}, template("service_weburl/index"), _("Services List"), 1)
+    entry({"admin", "services", "service_weburl", "add"}, template("service_weburl/add"), _("Add Service"), 2)
+    entry({"admin", "services", "service_weburl", "log"}, template("service_weburl/log"), _("Logs"), 3)
+    
+    entry({"admin", "services", "service_weburl", "get_services"}, call("get_services"), nil)
+    entry({"admin", "services", "service_weburl", "add_service"}, call("add_service"), nil)
+    entry({"admin", "services", "service_weburl", "edit_service"}, call("edit_service"), nil)
+    entry({"admin", "services", "service_weburl", "delete_service"}, call("delete_service"), nil)
+    entry({"admin", "services", "service_weburl", "get_logs"}, call("get_logs"), nil)
 end
 
--- 统一API响应函数
-local function api_response(success, data, message, status)
-    luci.http.prepare_content("application/json")
-    luci.http.write_json({
-        success = success,
-        data = data or {},
-        message = message or "",
-        timestamp = os.time()
-    })
-    if not success and status then
-        luci.http.status(status)
+local function log_action(action, details)
+    local db = sqlite3.open("/etc/service_weburl/data.db")
+    if db then
+        local stmt = db:prepare("INSERT INTO logs (action, details) VALUES (?, ?)")
+        stmt:bind_values(action, details)
+        stmt:step()
+        stmt:finalize()
+        db:close()
     end
 end
 
--- 检查权限
-local function check_permission()
-    if not luci.dispatcher.authenticated then
-        api_response(false, nil, "Unauthorized", 401)
-        return false
+function get_services()
+    local db = sqlite3.open("/etc/service_weburl/data.db")
+    local result = {}
+    
+    if db then
+        for row in db:nrows("SELECT * FROM services ORDER BY created_at DESC") do
+            table.insert(result, row)
+        end
+        db:close()
     end
-    return true
+    
+    http.prepare_content("application/json")
+    http.write_json(result)
 end
 
--- 数据列表
-function action_list()
-    if not check_permission() then return end
+function add_service()
+    local post = http.formvalue()
+    local title = post.title
+    local url = post.url
+    local description = post.description or ""
     
-    local db = require "service_weburl.db"
-    local services, err = db.query_services()
-    if not services then
-        api_response(false, nil, "Failed to get services: "..tostring(err), 500)
+    if not title or not url then
+        http.prepare_content("application/json")
+        http.write_json({success = false, message = "Missing required fields"})
         return
     end
-    api_response(true, {services = services})
+    
+    local db = sqlite3.open("/etc/service_weburl/data.db")
+    if db then
+        local stmt = db:prepare("INSERT INTO services (title, url, description) VALUES (?, ?, ?)")
+        stmt:bind_values(title, url, description)
+        stmt:step()
+        stmt:finalize()
+        db:close()
+        
+        log_action("add", string.format("Added service: %s", title))
+        
+        http.prepare_content("application/json")
+        http.write_json({success = true})
+    else
+        http.prepare_content("application/json")
+        http.write_json({success = false, message = "Database error"})
+    end
 end
 
--- 编辑数据处理
-function action_edit()
-    if not check_permission() then return end
+function edit_service()
+    local post = http.formvalue()
+    local id = post.id
+    local title = post.title
+    local url = post.url
+    local description = post.description or ""
     
-    local id = luci.http.formvalue("id")
-    if not id or not tonumber(id) then
-        api_response(false, nil, "Invalid ID", 400)
+    if not id or not title or not url then
+        http.prepare_content("application/json")
+        http.write_json({success = false, message = "Missing required fields"})
         return
     end
     
-    local db = require "service_weburl.db"
-    local service, err = db.get_service_by_id(id)
-    if not service then
-        api_response(false, nil, "Service not found: "..tostring(err), 404)
-        return
+    local db = sqlite3.open("/etc/service_weburl/data.db")
+    if db then
+        local stmt = db:prepare("UPDATE services SET title = ?, url = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        stmt:bind_values(title, url, description, id)
+        stmt:step()
+        stmt:finalize()
+        db:close()
+        
+        log_action("edit", string.format("Edited service: %s", title))
+        
+        http.prepare_content("application/json")
+        http.write_json({success = true})
+    else
+        http.prepare_content("application/json")
+        http.write_json({success = false, message = "Database error"})
     end
-    
-    api_response(true, {service = service})
 end
 
--- 删除处理
-function action_delete()
-    if not check_permission() then return end
+function delete_service()
+    local post = http.formvalue()
+    local id = post.id
     
-    local id = luci.http.formvalue("id")
-    if not id or not tonumber(id) then
-        api_response(false, nil, "Invalid ID", 400)
+    if not id then
+        http.prepare_content("application/json")
+        http.write_json({success = false, message = "Missing service ID"})
         return
     end
     
-    local db = require "service_weburl.db"
-    local service, err = db.get_service_by_id(id)
-    if not service then
-        api_response(false, nil, "Service not found", 404)
-        return
+    local db = sqlite3.open("/etc/service_weburl/data.db")
+    if db then
+        local stmt = db:prepare("DELETE FROM services WHERE id = ?")
+        stmt:bind_values(id)
+        stmt:step()
+        stmt:finalize()
+        db:close()
+        
+        log_action("delete", string.format("Deleted service ID: %s", id))
+        
+        http.prepare_content("application/json")
+        http.write_json({success = true})
+    else
+        http.prepare_content("application/json")
+        http.write_json({success = false, message = "Database error"})
     end
-    
-    local success, err = db.delete_service(id)
-    if not success then
-        api_response(false, nil, "Failed to delete service: "..tostring(err), 500)
-        return
-    end
-    
-    api_response(true, nil, "Service deleted successfully")
 end
 
-function action_logtail()
-    if not check_permission() then return end
+function get_logs()
+    local db = sqlite3.open("/etc/service_weburl/data.db")
+    local result = {}
     
-    local db = require "service_weburl.db"
-    local logs, err = db.query_logs()
-    if not logs then
-        api_response(false, nil, "Failed to get logs: "..tostring(err), 500)
-        return
+    if db then
+        for row in db:nrows("SELECT * FROM logs ORDER BY created_at DESC LIMIT 100") do
+            table.insert(result, row)
+        end
+        db:close()
     end
     
-    local log_text = ""
-    for _, log in ipairs(logs) do
-        log_text = log_text .. log.timestamp .. " [" .. log.action .. "] " .. (log.message or "") .. "\n"
-    end
-    
-    api_response(true, {log = log_text})
-end
-
-function action_invalidate_cache()
-    if not check_permission() then return end
-    
-    local ok, err = pcall(function()
-        os.execute("rm -rf /tmp/service_weburl_cache*")
-        return true
-    end)
-    
-    if not ok then
-        api_response(false, nil, "Failed to clear cache: "..tostring(err), 500)
-        return
-    end
-    
-    api_response(true, nil, "Cache cleared successfully")
+    http.prepare_content("application/json")
+    http.write_json(result)
 end
