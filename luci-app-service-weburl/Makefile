@@ -15,10 +15,34 @@ LUCI_DEPENDS:=+libsqlite3
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
-# Install service_weburl module files
 define Package/$(PKG_NAME)/install
+	# Create necessary directories
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/service_weburl
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/service_weburl
 	$(INSTALL_DIR) $(1)/usr/lib/lua/service_weburl
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/luasrc/service_weburl/db.lua $(1)/usr/lib/lua/service_weburl/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_DIR) $(1)/usr/share/rpcd/acl.d
+	
+	# Install Lua files
+	$(INSTALL_DATA) ./luasrc/controller/service_weburl.lua $(1)/usr/lib/lua/luci/controller/
+	$(INSTALL_DATA) ./luasrc/model/cbi/service_weburl/*.lua $(1)/usr/lib/lua/luci/model/cbi/service_weburl/
+	$(INSTALL_DATA) ./luasrc/view/service_weburl/*.htm $(1)/usr/lib/lua/luci/view/service_weburl/
+	$(INSTALL_DATA) ./luasrc/service_weburl/db.lua $(1)/usr/lib/lua/service_weburl/
+	
+	# Install config files
+	$(INSTALL_CONF) ./root/etc/config/service_weburl $(1)/etc/config/
+	$(INSTALL_CONF) ./root/etc/config/data.db $(1)/etc/config/
+	$(INSTALL_BIN) ./root/etc/uci-defaults/luci-app-service-weburl $(1)/etc/uci-defaults/
+	
+	# Install ACL file
+	$(INSTALL_DATA) ./root/usr/share/rpcd/acl.d/luci-app-service-weburl.json $(1)/usr/share/rpcd/acl.d/
+	
+	# Install translations
+	$(INSTALL_DATA) ./po/zh-cn/service_weburl.po $(1)/usr/lib/lua/luci/i18n/service_weburl.zh-cn.lmo
+	$(INSTALL_DATA) ./po/zh_Hans/service_weburl.po $(1)/usr/lib/lua/luci/i18n/service_weburl.zh_Hans.lmo
 endef
 
 # call BuildPackage - OpenWrt buildroot signature
