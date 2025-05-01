@@ -20,7 +20,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/service_weburl
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/service_weburl
-	$(INSTALL_DIR) $(1)/usr/lib/lua/service_weburl
+	$(INSTALL_DIR) $(1)/usr/lib/lua/service_weburl  # 修改这里，确保创建正确的模块目录
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
@@ -30,7 +30,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DATA) ./luasrc/controller/service_weburl.lua $(1)/usr/lib/lua/luci/controller/
 	$(INSTALL_DATA) ./luasrc/model/cbi/service_weburl/*.lua $(1)/usr/lib/lua/luci/model/cbi/service_weburl/
 	$(INSTALL_DATA) ./luasrc/view/service_weburl/*.htm $(1)/usr/lib/lua/luci/view/service_weburl/
-	$(INSTALL_DATA) ./luasrc/service_weburl/db.lua $(1)/usr/lib/lua/service_weburl/
+	$(INSTALL_DATA) ./luasrc/service_weburl/db.lua $(1)/usr/lib/lua/service_weburl/  # 修改这里，确保 db.lua 安装到正确位置
 	
 	# Install config files
 	$(INSTALL_CONF) ./root/etc/config/service_weburl $(1)/etc/config/
