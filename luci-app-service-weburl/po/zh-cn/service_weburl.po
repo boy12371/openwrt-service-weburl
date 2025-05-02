@@ -1,11 +1,11 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8\n"
 
-msgid "AliyunDrive"
-msgstr "阿里云盘"
+msgid "WebURL"
+msgstr "WebURL"
 
-msgid "AliyunDrive WebDAV"
-msgstr "阿里云盘 WebDAV"
+msgid "WebURL Service"
+msgstr "WebURL 服务"
 
 msgid "Enable"
 msgstr "启用"
@@ -14,7 +14,7 @@ msgid "Refresh Token"
 msgstr "Refresh Token"
 
 msgid "Root Directory"
-msgstr "云盘根目录"
+msgstr "根目录"
 
 msgid "Host"
 msgstr "监听主机"
@@ -73,8 +73,8 @@ msgstr "<a href=\"https://github.com/messense/service_weburl\" target=\"_blank\"
 msgid "Double click the input box above to get refresh token by scanning qrcode"
 msgstr "鼠标双击上面的输入框扫码登录自动获取 refresh token"
 
-msgid "Restrict access to a folder of aliyundrive, defaults to / which means no restrictions"
-msgstr "限制只能访问该云盘目录，默认为 / 表示不限制，注意这个参数不是本地磁盘路径"
+msgid "Restrict access to a folder, defaults to / which means no restrictions"
+msgstr "限制只能访问该目录，默认为 / 表示不限制，注意这个参数不是本地磁盘路径"
 
 msgid "Delete file permanently instead of trashing"
 msgstr "删除文件不放入回收站"

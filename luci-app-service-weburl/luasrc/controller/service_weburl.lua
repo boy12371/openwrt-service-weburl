@@ -7,7 +7,7 @@ function index()
 
 	local page
 	page = entry({ "admin", "services", "service_weburl" }, alias("admin", "services", "service_weburl", "client"),
-		_("AliyunDrive WebDAV"), 10) -- 首页
+		_("WebURL Service"), 10) -- 首页
 	page.dependent = true
 	page.acl_depends = { "luci-app-service_weburl" }
 
