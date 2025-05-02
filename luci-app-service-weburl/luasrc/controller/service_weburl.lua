@@ -11,12 +11,12 @@ function index()
     service.index()
     
     -- 注册日志查看路由
-    entry({"admin", "services", "project-weburl", "log"}, call("action_log"), _("Logs"), 50).leaf = true
+    entry({"admin", "services", "service_weburl", "log"}, call("action_log"), _("Logs"), 50).leaf = true
     
     -- 注册QR码相关路由
-    entry({"admin", "services", "project-weburl", "qrcode"}, call("action_qrcode"), _("QR Code"), 60).leaf = true
-    entry({"admin", "services", "project-weburl", "qrcode", "generate", "%d+"}, call("action_generate_qrcode")).leaf = true
-    entry({"admin", "services", "project-weburl", "qrcode", "download", "%d+"}, call("action_download_qrcode")).leaf = true
+    entry({"admin", "services", "service_weburl", "qrcode"}, call("action_qrcode"), _("QR Code"), 60).leaf = true
+    entry({"admin", "services", "service_weburl", "qrcode", "generate", "%d+"}, call("action_generate_qrcode")).leaf = true
+    entry({"admin", "services", "service_weburl", "qrcode", "download", "%d+"}, call("action_download_qrcode")).leaf = true
 end
 
 -- 日志查看功能
@@ -45,7 +45,7 @@ function action_log()
     stmt:finalize()
     db_conn:close()
 
-    template.render("project-weburl/log", {
+    template.render("service_weburl/log", {
         logs = logs,
         pagination = {
             page = page,

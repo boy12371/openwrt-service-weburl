@@ -31,7 +31,7 @@
                        class="cbi-button cbi-button-edit">
                         <%:Edit%>
                     </a>
-                    <a href="<%=luci.dispatcher.build_url('admin/services/project-weburl/delete/'..service.id)%>" 
+                    <a href="<%=luci.dispatcher.build_url('admin/services/service_weburl/delete/'..service.id)%>" 
                        class="cbi-button cbi-button-remove"
                        onclick="return confirm('<%:Are you sure you want to delete this service?%>')">
                         <%:Delete%>
@@ -44,7 +44,7 @@
     <% end %>
 
     <div class="cbi-page-actions">
-        <a href="<%=luci.dispatcher.build_url('admin/services/project-weburl/add')%>" 
+        <a href="<%=luci.dispatcher.build_url('admin/services/service_weburl/add')%>" 
            class="cbi-button cbi-button-add">
             <%:Add New Service%>
         </a>
