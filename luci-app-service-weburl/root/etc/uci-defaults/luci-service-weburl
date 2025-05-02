@@ -1,7 +1,13 @@
 #!/bin/sh
 
-DB_PATH="/etc/config/data.db"
+. /lib/functions.sh
+
 LOG_TAG="luci-service-weburl"
+
+# 加载配置
+config_load service_weburl
+config_get DB_PATH service_weburl db_path "/etc/config/service_weburl.db"
+config_get DB_PERMS service_weburl db_perms "600"
 
 # 记录错误并退出
 log_error_and_exit() {

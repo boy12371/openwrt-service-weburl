@@ -1,11 +1,20 @@
 local sqlite3 = require "lsqlite3"
 local nixio = require "nixio"
 local util = require "luci.util"
+local config = require "luci.model.cbi.service_weburl.config"
 
 local M = {}
 
--- 数据库文件路径
-local DB_PATH = "/etc/config/data.db"
+-- 从配置获取数据库路径
+local DB_PATH = config.get_config().db_path
+
+-- 设置数据库文件权限
+local function set_db_permissions()
+    local perms = config.get_config().db_perms
+    if nixio.fs.stat(DB_PATH) then
+        nixio.fs.chmod(DB_PATH, perms)
+    end
+end
 
 -- 初始化数据库连接
 function M.init_db()
@@ -82,15 +91,29 @@ end
 
 -- 添加服务
 function M.add_service(db, title, url, description)
-    local stmt = db:prepare("INSERT INTO services (title, url, description) VALUES (?, ?, ?)")
+    -- 输入验证
+    if not title or type(title) ~= "string" or #title > 100 then
+        return nil, "Invalid title (max 100 chars)"
+    end
+    
+    if not url or not url:match("^https?://[%w-_%.%?%.:/%+=&]+$") then
+        return nil, "Invalid URL format"
+    end
+    
+    description = description and #description > 0 and description or nil
+    
+    local stmt, err = db:prepare("INSERT INTO services (title, url, description) VALUES (?, ?, ?)")
+    if not stmt then return nil, err end
+    
     stmt:bind_values(title, url, description)
-    local success = stmt:step()
+    local success, err = stmt:step()
     stmt:finalize()
     
     if success then
+        set_db_permissions()
         return db:last_insert_rowid()
     end
-    return nil
+    return nil, err or "Failed to add service"
 end
 
 -- 更新服务
