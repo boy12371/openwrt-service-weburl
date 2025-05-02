@@ -16,30 +16,15 @@ end
 
 -- 日志查看功能
 function action_log()
-    local db_conn = db.init_db()
-    if not db_conn then
-        http.status(500, "Database Error")
-        return
-    end
-
+    local log_model = require "luci.model.cbi.service_weburl.log"
+    return log_model.action_log()
+    local log_model = require "luci.model.cbi.service_weburl.log"
     local page = tonumber(http.formvalue("page")) or 1
     local limit = 20
-    local offset = (page - 1) * limit
-
-    -- 获取总日志数
-    local total = db_conn:first_row("SELECT COUNT(*) as count FROM logs").count
-
-    -- 获取分页日志
-    local stmt = db_conn:prepare("SELECT * FROM logs ORDER BY timestamp DESC LIMIT ? OFFSET ?")
-    stmt:bind_values(limit, offset)
     
-    local logs = {}
-    for row in stmt:nrows() do
-        table.insert(logs, row)
-    end
-    stmt:finalize()
-    db_conn:close()
-
+    -- 调用模型层获取日志数据
+    local logs, total = log_model.get_logs(page, limit)
+    
     template.render("service_weburl/log", {
         logs = logs,
         pagination = {
