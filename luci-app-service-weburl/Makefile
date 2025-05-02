@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=Service WebURL Management Interface
-LUCI_DEPENDS:=+luci-compat +luci-lib-ipkg +sqlite3-cli +qrencode
+LUCI_DEPENDS:=+luci-compat +luci-lib-ipkg +sqlite3-cli
 LUCI_PKGARCH:=all
 PKG_NAME:=luci-app-service-weburl
 PKG_VERSION:=1.1

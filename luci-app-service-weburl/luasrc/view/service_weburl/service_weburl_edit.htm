@@ -8,7 +8,7 @@
         <% end %>
     </h2>
 
-    <form method="post" action="<%=luci.dispatcher.build_url('admin/services/project-weburl/'..(service and service.id and 'edit/'..service.id or 'add'))%>" class="cbi-map">
+    <form method="post" action="<%=luci.dispatcher.build_url('admin/services/service_weburl/'..(service and service.id and 'edit/'..service.id or 'add'))%>" class="cbi-map">
         <% if service and service.id then %>
         <input type="hidden" name="id" value="<%=service.id%>" />
         <% end %>
