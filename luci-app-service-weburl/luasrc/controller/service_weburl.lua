@@ -1,7 +1,7 @@
-module("luci.controller.project-weburl", package.seeall)
+module("luci.controller.service_weburl", package.seeall)
 
-local service = require "luci.model.cbi.project-weburl.service"
-local db = require "project-weburl.db"
+local service = require "luci.model.cbi.service_weburl.service"
+local db = require "service_weburl.db"
 local http = require "luci.http"
 local sys = require "luci.sys"
 local util = require "luci.util"

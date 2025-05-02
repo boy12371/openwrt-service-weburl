@@ -1,10 +1,10 @@
-local db = require "project-weburl.db"
+local db = require "service_weburl.db"
 local sys = require "luci.sys"
 local http = require "luci.http"
 local util = require "luci.util"
 local uci = require "luci.model.uci".cursor()
 
-module("luci.model.cbi.project-weburl.service", package.seeall)
+module("luci.model.cbi.service_weburl.service", package.seeall)
 
 function index()
     entry({"admin", "services", "project-weburl"}, call("action_index"), _("Service WebURL"), 10).index = true
