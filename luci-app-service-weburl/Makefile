@@ -10,7 +10,7 @@ PKG_MAINTAINER:=messense <messense@icloud.com>
 
 LUCI_TITLE:=LuCI Support for service-weburl
 LUCI_PKGARCH:=all
-LUCI_DEPENDS:=+aliyundrive-webdav
+LUCI_DEPENDS:=+service_weburl
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

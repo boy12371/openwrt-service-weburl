@@ -4,6 +4,6 @@ log.reset = false
 
 t = log:field(DummyValue, '', '')
 t.rawhtml = true
-t.template = 'aliyundrive-webdav/aliyundrive-webdav_log'
+t.template = 'service_weburl/service_weburl_log'
 
 return log

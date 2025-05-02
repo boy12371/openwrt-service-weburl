@@ -1,8 +1,8 @@
-m = Map("aliyundrive-webdav")
+m = Map("service_weburl")
 m.title = translate("AliyunDrive WebDAV")
-m.description = translate("<a href=\"https://github.com/messense/aliyundrive-webdav\" target=\"_blank\">Project GitHub URL</a>")
+m.description = translate("<a href=\"https://github.com/messense/service_weburl\" target=\"_blank\">Project GitHub URL</a>")
 
-m:section(SimpleSection).template = "aliyundrive-webdav/aliyundrive-webdav_status"
+m:section(SimpleSection).template = "service_weburl/service_weburl_status"
 
 e = m:section(TypedSection, "server")
 e.anonymous = true
@@ -15,7 +15,7 @@ refresh_token.description = translate("Double click the input box above to get r
 
 qrcode = e:option(DummyValue, '', '')
 qrcode.rawhtml = true
-qrcode.template = 'aliyundrive-webdav/aliyundrive-webdav_qrcode'
+qrcode.template = 'service_weburl/service_weburl_qrcode'
 
 root = e:option(Value, "root", translate("Root Directory"))
 root.description = translate("Restrict access to a folder of aliyundrive, defaults to / which means no restrictions")
