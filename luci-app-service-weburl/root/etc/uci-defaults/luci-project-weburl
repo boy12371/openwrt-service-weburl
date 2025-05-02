@@ -1,0 +1,11 @@
+#!/bin/sh
+
+uci -q batch <<-EOF >/dev/null
+    delete ucitrack.@project-weburl[-1]
+    add ucitrack project-weburl
+    set ucitrack.@project-weburl[-1].init=project-weburl
+    commit ucitrack
+EOF
+
+rm -f /tmp/luci-indexcache
+exit 0
