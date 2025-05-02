@@ -72,16 +72,3 @@ msgstr "标题不能为空"
 
 msgid "Service ID"
 msgstr "服务ID"
-
-# QR Code translations commented out as the feature is removed
-# msgid "QR Code"
-# msgstr "二维码"
-#
-# msgid "QR Code for Service"
-# msgstr "服务二维码"
-#
-# msgid "Download QR Code"
-# msgstr "下载二维码"
-#
-# msgid "QR Code for %s"
-# msgstr "%s的二维码"
