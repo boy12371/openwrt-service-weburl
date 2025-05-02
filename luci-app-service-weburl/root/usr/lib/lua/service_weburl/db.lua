@@ -147,4 +147,34 @@ function M.transaction(db, func)
     return success, err
 end
 
+-- 获取分页日志
+function M.get_paginated_logs(db_conn, page, limit)
+    page = page or 1
+    limit = limit or 20
+    local offset = (page - 1) * limit
+
+    -- 获取总日志数
+    local total = db_conn:first_row("SELECT COUNT(*) as count FROM logs").count
+
+    -- 获取分页日志
+    local stmt = db_conn:prepare("SELECT * FROM logs ORDER BY timestamp DESC LIMIT ? OFFSET ?")
+    stmt:bind_values(limit, offset)
+    
+    local logs = {}
+    for row in stmt:nrows() do
+        table.insert(logs, row)
+    end
+    stmt:finalize()
+
+    return {
+        logs = logs,
+        pagination = {
+            page = page,
+            limit = limit,
+            total = total,
+            pages = math.ceil(total / limit)
+        }
+    }
+end
+
 return M

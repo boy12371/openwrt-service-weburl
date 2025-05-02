@@ -7,7 +7,7 @@ local util = require "luci.util"
 module("luci.model.cbi.service_weburl.log", package.seeall)
 
 function index()
-    entry({"admin", "services", "project-weburl", "log"}, call("action_log"), _("Logs"), 40).leaf = true
+    entry({"admin", "services", "service_weburl", "log"}, call("action_log"), _("Logs"), 40).leaf = true
 end
 
 function action_log()
@@ -19,31 +19,11 @@ function action_log()
 
     local page = tonumber(http.formvalue("page")) or 1
     local limit = 20
-    local offset = (page - 1) * limit
-
-    -- Get total count
-    local total = db_conn:first_row("SELECT COUNT(*) as count FROM logs").count
-
-    -- Get paginated logs
-    local stmt = db_conn:prepare("SELECT * FROM logs ORDER BY timestamp DESC LIMIT ? OFFSET ?")
-    stmt:bind_values(limit, offset)
     
-    local logs = {}
-    for row in stmt:nrows() do
-        table.insert(logs, row)
-    end
-    stmt:finalize()
+    local result = db.get_paginated_logs(db_conn, page, limit)
     db_conn:close()
 
-    template.render("project-weburl/log", {
-        logs = logs,
-        pagination = {
-            page = page,
-            limit = limit,
-            total = total,
-            pages = math.ceil(total / limit)
-        }
-    })
+    template.render("service_weburl/log", result)
 end
 
 function filter_logs(db_conn, action, service_id, date_from, date_to)

@@ -16,7 +16,7 @@ endef
 define Package/$(PKG_NAME)/postinst
 #!/bin/sh
 [ -n "$${IPKG_INSTROOT}" ] || {
-    ( . /etc/uci-defaults/luci-project-weburl ) && rm -f /etc/uci-defaults/luci-project-weburl
+    ( . /etc/uci-defaults/luci-service-weburl ) && rm -f /etc/uci-defaults/luci-service-weburl
     rm -rf /tmp/luci-indexcache /tmp/luci-modulecache
 }
 endef
