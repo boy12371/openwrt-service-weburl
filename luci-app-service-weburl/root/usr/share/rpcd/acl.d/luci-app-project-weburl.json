@@ -1,21 +1,11 @@
 {
-    "luci-app-project-weburl": {
-        "description": "Grant access to Service WebURL management",
-        "read": {
-            "ubus": {
-                "luci": ["getFeatures"],
-                "file": ["exec", "read", "stat"],
-                "uci": ["get"]
-            },
-            "uci": ["project-weburl"]
-        },
-        "write": {
-            "ubus": {
-                "luci": ["setFeatures"],
-                "file": ["write", "remove"],
-                "uci": ["set", "add", "delete", "rename", "reorder"]
-            },
-            "uci": ["project-weburl"]
-        }
+    "luci-app-service-weburl": {
+      "description": "Grant UCI access for luci-app-service-weburl",
+      "read": {
+        "uci": [ "service_weburl" ]
+      },
+      "write": {
+        "uci": [ "service_weburl" ]
+      }
     }
-}
+  }
