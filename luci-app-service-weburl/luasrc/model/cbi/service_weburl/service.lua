@@ -7,10 +7,10 @@ local uci = require "luci.model.uci".cursor()
 module("luci.model.cbi.service_weburl.service", package.seeall)
 
 function index()
-    entry({"admin", "services", "project-weburl"}, call("action_index"), _("Service WebURL"), 10).index = true
-    entry({"admin", "services", "project-weburl", "add"}, call("action_add"), nil, 20).leaf = true
-    entry({"admin", "services", "project-weburl", "edit"}, call("action_edit"), nil, 30).leaf = true
-    entry({"admin", "services", "project-weburl", "delete"}, call("action_delete"), nil, 40).leaf = true
+    entry({"admin", "services", "service_weburl"}, call("action_index"), _("Service WebURL"), 10).index = true
+    entry({"admin", "services", "service_weburl", "add"}, call("action_add"), nil, 20).leaf = true
+    entry({"admin", "services", "service_weburl", "edit"}, call("action_edit"), nil, 30).leaf = true
+    entry({"admin", "services", "service_weburl", "delete"}, call("action_delete"), nil, 40).leaf = true
 end
 
 function validate_service(form)
@@ -71,9 +71,9 @@ function action_add()
         end
         
         db.log_action(db_conn, "CREATE", string.format("Added service: %s", form.title), id)
-        http.redirect(luci.dispatcher.build_url("admin/services/project-weburl"))
+        http.redirect(luci.dispatcher.build_url("admin/services/service_weburl"))
     else
-        template.render("project-weburl/edit", {
+        template.render("service_weburl/edit", {
             service = {
                 title = "",
                 url = "http://",
@@ -125,9 +125,9 @@ function action_edit()
         end
         
         db.log_action(db_conn, "UPDATE", string.format("Updated service: %s", form.title), id)
-        http.redirect(luci.dispatcher.build_url("admin/services/project-weburl"))
+        http.redirect(luci.dispatcher.build_url("admin/services/service_weburl"))
     else
-        template.render("project-weburl/edit", {
+        template.render("service_weburl/edit", {
             service = service
         })
     end
@@ -161,7 +161,7 @@ function action_delete()
     end
     
     db.log_action(db_conn, "DELETE", string.format("Deleted service: %s", service.title), id)
-    http.redirect(luci.dispatcher.build_url("admin/services/project-weburl"))
+            http.redirect(luci.dispatcher.build_url("admin/services/service_weburl"))
     
     db_conn:close()
 end
