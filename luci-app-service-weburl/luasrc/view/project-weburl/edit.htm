@@ -1,0 +1,105 @@
+<%+header%>
+<div class="cbi-map">
+    <h2>
+        <% if service and service.id then %>
+            <%:Edit Service%>
+        <% else %>
+            <%:Add New Service%>
+        <% end %>
+    </h2>
+
+    <form method="post" action="<%=luci.dispatcher.build_url('admin/services/project-weburl/'..(service and service.id and 'edit/'..service.id or 'add'))%>" class="cbi-map">
+        <% if service and service.id then %>
+        <input type="hidden" name="id" value="<%=service.id%>" />
+        <% end %>
+
+        <div class="cbi-section">
+            <div class="cbi-section-node">
+                <div class="cbi-value">
+                    <label class="cbi-value-title" for="title"><%:Title%> *</label>
+                    <div class="cbi-value-field">
+                        <input type="text" id="title" name="title" value="<%=service and service.title or ''%>" 
+                               class="cbi-input-text" required />
+                    </div>
+                </div>
+
+                <div class="cbi-value">
+                    <label class="cbi-value-title" for="url"><%:URL%> *</label>
+                    <div class="cbi-value-field">
+                        <input type="url" id="url" name="url" value="<%=service and service.url or 'http://'%>" 
+                               class="cbi-input-text" required 
+                               pattern="https?://.+" 
+                               title="<%:Please enter a valid URL starting with http:// or https://%>" />
+                    </div>
+                </div>
+
+                <div class="cbi-value">
+                    <label class="cbi-value-title" for="description"><%:Description%></label>
+                    <div class="cbi-value-field">
+                        <textarea id="description" name="description" class="cbi-input-textarea" 
+                                  rows="4"><%=service and service.description or ''%></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cbi-page-actions">
+            <button type="submit" class="cbi-button cbi-button-save">
+                <% if service and service.id then %>
+                    <%:Save Changes%>
+                <% else %>
+                    <%:Add Service%>
+                <% end %>
+            </button>
+            <a href="<%=luci.dispatcher.build_url('admin/services/project-weburl')%>" class="cbi-button cbi-button-reset">
+                <%:Cancel%>
+            </a>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function(e) {
+        const title = document.getElementById("title").value.trim();
+        const url = document.getElementById("url").value.trim();
+        
+        if (!title) {
+            alert("<%:Title is required%>");
+            e.preventDefault();
+            return;
+        }
+        
+        if (!url || !url.match(/^https?:\/\/.+/)) {
+            alert("<%:Please enter a valid URL starting with http:// or https://%>");
+            e.preventDefault();
+            return;
+        }
+    });
+});
+</script>
+
+<style type="text/css">
+.cbi-value {
+    margin-bottom: 1rem;
+}
+
+.cbi-value-title {
+    width: 150px;
+}
+
+.cbi-input-text, .cbi-input-textarea {
+    width: 100%;
+    max-width: 500px;
+}
+
+.cbi-input-textarea {
+    min-height: 100px;
+}
+
+.cbi-page-actions {
+    margin-top: 1rem;
+}
+</style>
+<%+footer%>

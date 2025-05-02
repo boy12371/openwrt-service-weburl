@@ -1,0 +1,106 @@
+<%+header%>
+<div class="cbi-map">
+    <h2><%:Service WebURL Management%></h2>
+    <div class="cbi-map-descr"><%:Manage your service URLs and descriptions%></div>
+
+    <% if #services == 0 then %>
+    <div class="cbi-section">
+        <div class="cbi-section-node">
+            <p><%:No services found. Add your first service below.%></p>
+        </div>
+    </div>
+    <% else %>
+    <div class="cbi-section">
+        <div class="services-grid">
+            <% for _, service in ipairs(services) do %>
+            <div class="service-card">
+                <div class="service-header">
+                    <h3><%=service.title%></h3>
+                    <span class="service-date"><%=os.date("%Y-%m-%d", service.updated_at)%></span>
+                </div>
+                <div class="service-body">
+                    <% if service.description and #service.description > 0 then %>
+                    <p class="service-description"><%=service.description%></p>
+                    <% end %>
+                    <a href="<%=service.url%>" target="_blank" class="btn cbi-button cbi-button-apply">
+                        <%:Visit Service%>
+                    </a>
+                </div>
+                <div class="service-footer">
+                    <a href="<%=luci.dispatcher.build_url('admin/services/project-weburl/edit/'..service.id)%>" 
+                       class="cbi-button cbi-button-edit">
+                        <%:Edit%>
+                    </a>
+                    <a href="<%=luci.dispatcher.build_url('admin/services/project-weburl/delete/'..service.id)%>" 
+                       class="cbi-button cbi-button-remove"
+                       onclick="return confirm('<%:Are you sure you want to delete this service?%>')">
+                        <%:Delete%>
+                    </a>
+                </div>
+            </div>
+            <% end %>
+        </div>
+    </div>
+    <% end %>
+
+    <div class="cbi-page-actions">
+        <a href="<%=luci.dispatcher.build_url('admin/services/project-weburl/add')%>" 
+           class="cbi-button cbi-button-add">
+            <%:Add New Service%>
+        </a>
+    </div>
+</div>
+<%+footer%>
+
+<style type="text/css">
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.service-card {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.service-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.service-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.service-description {
+    margin: 0.5rem 0;
+    color: #555;
+}
+
+.service-footer {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

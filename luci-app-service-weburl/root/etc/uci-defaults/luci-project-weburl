@@ -1,11 +1,41 @@
 #!/bin/sh
 
-uci -q batch <<-EOF >/dev/null
-    delete ucitrack.@project-weburl[-1]
-    add ucitrack project-weburl
-    set ucitrack.@project-weburl[-1].init=project-weburl
-    commit ucitrack
+DB_PATH="/etc/config/data.db"
+
+# Check if database already exists
+[ -f "$DB_PATH" ] && exit 0
+
+# Create database directory if not exists
+mkdir -p /etc/config
+
+# Initialize database
+sqlite3 "$DB_PATH" <<EOF
+CREATE TABLE services (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    action TEXT NOT NULL,
+    message TEXT,
+    service_id INTEGER,
+    FOREIGN KEY(service_id) REFERENCES services(id) ON DELETE CASCADE
+);
+
+CREATE TRIGGER update_service_timestamp 
+AFTER UPDATE ON services 
+BEGIN
+    UPDATE services SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 EOF
 
-rm -f /tmp/luci-indexcache
+# Set proper permissions
+chmod 644 "$DB_PATH"
+
 exit 0
