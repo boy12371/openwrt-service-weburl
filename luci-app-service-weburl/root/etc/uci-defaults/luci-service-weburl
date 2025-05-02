@@ -1,15 +1,36 @@
 #!/bin/sh
 
 DB_PATH="/etc/config/data.db"
+LOG_TAG="luci-service-weburl"
 
-# Check if database already exists
-[ -f "$DB_PATH" ] && exit 0
+# 记录错误并退出
+log_error_and_exit() {
+    logger -t "$LOG_TAG" -p error "$1"
+    exit 1
+}
 
-# Create database directory if not exists
-mkdir -p /etc/config
+# 检查sqlite3命令是否存在
+if ! command -v sqlite3 >/dev/null; then
+    log_error_and_exit "sqlite3 command not found, please install sqlite3-cli package"
+fi
 
-# Initialize database
-sqlite3 "$DB_PATH" <<EOF
+# 检查数据库目录是否存在，不存在则创建
+if [ ! -d "/etc/config" ]; then
+    if ! mkdir -p "/etc/config"; then
+        log_error_and_exit "Failed to create database directory /etc/config"
+    fi
+    logger -t "$LOG_TAG" "Created database directory /etc/config"
+fi
+
+# 如果数据库已存在则跳过初始化
+if [ -f "$DB_PATH" ]; then
+    logger -t "$LOG_TAG" "Database already exists at $DB_PATH, skipping initialization"
+    exit 0
+fi
+
+# 初始化数据库
+logger -t "$LOG_TAG" "Initializing database at $DB_PATH"
+if ! sqlite3 "$DB_PATH" <<EOF
 CREATE TABLE services (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -34,8 +55,14 @@ BEGIN
     UPDATE services SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
 EOF
+then
+    log_error_and_exit "Failed to initialize database at $DB_PATH"
+fi
 
-# Set proper permissions
-chmod 644 "$DB_PATH"
+# 设置数据库权限
+if ! chmod 640 "$DB_PATH"; then
+    log_error_and_exit "Failed to set permissions on $DB_PATH"
+fi
 
+logger -t "$LOG_TAG" "Database initialized successfully at $DB_PATH"
 exit 0
