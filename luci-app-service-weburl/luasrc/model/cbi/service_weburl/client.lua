@@ -11,11 +11,6 @@ enable = e:option(Flag, "enable", translate("Enable"))
 enable.rmempty = false
 
 refresh_token = e:option(Value, "refresh_token", translate("Refresh Token"))
-refresh_token.description = translate("Double click the input box above to get refresh token by scanning qrcode")
-
-qrcode = e:option(DummyValue, '', '')
-qrcode.rawhtml = true
-qrcode.template = 'service_weburl/qrcode'
 
 root = e:option(Value, "root", translate("Root Directory"))
 root.description = translate("Restrict access to a folder, defaults to / which means no restrictions")

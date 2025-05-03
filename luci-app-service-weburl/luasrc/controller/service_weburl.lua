@@ -14,8 +14,6 @@ function index()
 
 	entry({ "admin", "services", "service_weburl", "status" }, call("action_status")).leaf = true -- 运行状态
 	entry({ "admin", "services", "service_weburl", "logtail" }, call("action_logtail")).leaf = true -- 日志采集
-	entry({ "admin", "services", "service_weburl", "qrcode" }, call("action_generate_qrcode")).leaf = true -- 生成扫码登录二维码地址和参数
-	entry({ "admin", "services", "service_weburl", "query" }, call("action_query_qrcode")).leaf = true -- 查询扫码登录结果
 	entry({ "admin", "services", "service_weburl", "invalidate-cache" }, call("action_invalidate_cache")).leaf = true -- 清除缓存
 end
 
@@ -39,21 +37,6 @@ function action_logtail()
 	end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(e)
-end
-
-function action_generate_qrcode()
-	local output = luci.sys.exec("service_weburl qr generate")
-	luci.http.prepare_content("application/json")
-	luci.http.write(output)
-end
-
-function action_query_qrcode()
-	local data = luci.http.formvalue()
-	local sid = data.sid
-	local output = {}
-	output.refresh_token = luci.sys.exec("service_weburl qr query --sid " .. sid)
-	luci.http.prepare_content("application/json")
-	luci.http.write_json(output)
 end
 
 function action_invalidate_cache()
