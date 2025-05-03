@@ -102,3 +102,19 @@ msgstr "启用 302 重定向"
 
 msgid "Enable 302 redirect when possible"
 msgstr "在可能的情况下启用 302 重定向"
+
+# Home page translations
+msgid "Service List"
+msgstr "服务列表"
+
+msgid "Service"
+msgstr "服务名称"
+
+msgid "Description"
+msgstr "服务描述"
+
+msgid "URL"
+msgstr "网址"
+
+msgid "Open"
+msgstr "打开"
