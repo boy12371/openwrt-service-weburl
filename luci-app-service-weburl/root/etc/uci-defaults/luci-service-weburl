@@ -1,5 +1,11 @@
 #!/bin/sh
 
+[ -f "/etc/config/service_weburl" ] || {
+cat >/etc/config/service_weburl <<-EOF
+config service_weburl 'service_weburl'
+    option enabled '0'
+EOF
+}
 uci -q batch <<-EOF >/dev/null
 	delete ucitrack.@service_weburl[-1]
 	add ucitrack service_weburl
