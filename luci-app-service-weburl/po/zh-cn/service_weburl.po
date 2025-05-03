@@ -5,7 +5,7 @@ msgid "WebURL"
 msgstr "WebURL"
 
 msgid "WebURL Service"
-msgstr "WebURL 服务"
+msgstr "服务网址"
 
 msgid "Enable"
 msgstr "启用"

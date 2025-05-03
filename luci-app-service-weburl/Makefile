@@ -6,7 +6,7 @@ PKG_RELEASE:=1
 PKG_PO_VERSION:=$(PKG_VERSION)-$(PKG_RELEASE)
 
 PKG_LICENSE:=MIT
-PKG_MAINTAINER:=messense <messense@icloud.com>
+PKG_MAINTAINER:=richard <richard@sveil.com>
 
 LUCI_TITLE:=LuCI Support for service-weburl
 LUCI_PKGARCH:=all
