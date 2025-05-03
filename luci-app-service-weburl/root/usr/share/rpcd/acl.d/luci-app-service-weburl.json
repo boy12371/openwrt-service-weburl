@@ -1,6 +1,6 @@
 {
-	"luci-app-service_weburl": {
-		"description": "Grant UCI access for luci-app-service_weburl",
+	"luci-app-service-weburl": {
+		"description": "Grant UCI access for luci-app-service-weburl",
 		"read": {
 			"uci": [ "service_weburl" ]
 		},

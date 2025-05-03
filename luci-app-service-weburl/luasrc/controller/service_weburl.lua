@@ -1,15 +1,13 @@
 module("luci.controller.service_weburl", package.seeall)
 
 function index()
-	if not nixio.fs.access("/etc/config/service_weburl") then
-		return
-	end
+    if not nixio.fs.access("/etc/config/service_weburl") then return end
 
 	local page
 	page = entry({ "admin", "services", "service_weburl" }, alias("admin", "services", "service_weburl", "client"),
 		_("WebURL Service"), 10) -- 首页
 	page.dependent = true
-	page.acl_depends = { "luci-app-service_weburl" }
+	page.acl_depends = { "luci-app-service-weburl" }
 
 	entry({ "admin", "services", "service_weburl", "client" }, cbi("service_weburl/client"), _("Settings"), 10).leaf = true -- 客户端配置
 	entry({ "admin", "services", "service_weburl", "log" }, form("service_weburl/log"), _("Log"), 30).leaf = true -- 日志页面
