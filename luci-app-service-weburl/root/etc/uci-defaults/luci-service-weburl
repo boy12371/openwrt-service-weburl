@@ -4,6 +4,16 @@
 cat >/etc/config/service_weburl <<-EOF
 config service_weburl 'service_weburl'
     option enabled '0'
+
+config service 'web_service'
+    option title 'Web Service'
+    option url 'http://example.com'
+    option description 'Main web service interface'
+
+config service 'admin_panel' 
+    option title 'Admin Panel'
+    option url 'http://admin.example.com'
+    option description 'Service administration interface'
 EOF
 }
 uci -q batch <<-EOF >/dev/null

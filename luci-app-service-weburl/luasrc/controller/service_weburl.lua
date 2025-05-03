@@ -45,3 +45,120 @@ function action_invalidate_cache()
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(e)
 end
+
+-- 服务管理API
+entry({"admin", "services", "service_weburl", "services"}, call("action_list_services")).leaf = true
+entry({"admin", "services", "service_weburl", "services"}, call("action_add_service")).leaf = true
+entry({"admin", "services", "service_weburl", "services", ":id"}, call("action_update_service")).leaf = true
+entry({"admin", "services", "service_weburl", "services", ":id"}, call("action_delete_service")).leaf = true
+
+function action_list_services()
+	local uci = require "luci.model.uci".cursor()
+	local e = {services = {}}
+
+	uci:foreach("service_weburl", "service", function(s)
+		table.insert(e.services, {
+			id = s[".name"],
+			title = s.title,
+			url = s.url,
+			description = s.description
+		})
+	end)
+
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(e)
+end
+
+function action_add_service()
+	local uci = require "luci.model.uci".cursor()
+	local http = luci.http
+	local e = {success = false}
+
+	local data = http.content()
+	if data then
+		local service = luci.jsonc.parse(data)
+		if service and service.title and service.url then
+			local id = "service_" .. os.time()
+			uci:section("service_weburl", "service", id, {
+				title = service.title,
+				url = service.url,
+				description = service.description or ""
+			})
+
+			if uci:save() and uci:commit() then
+				e.success = true
+				e.id = id
+			else
+				e.error = "Failed to save configuration"
+			end
+		else
+			e.error = "Invalid service data"
+		end
+	else
+		e.error = "No data received"
+	end
+
+	http.prepare_content("application/json")
+	http.write_json(e)
+end
+
+function action_update_service(id)
+	local uci = require "luci.model.uci".cursor()
+	local http = luci.http
+	local e = {success = false}
+
+	if id then
+		local data = http.content()
+		if data then
+			local service = luci.jsonc.parse(data)
+			if service and service.title and service.url then
+				if uci:get("service_weburl", id) then
+					uci:set("service_weburl", id, "title", service.title)
+					uci:set("service_weburl", id, "url", service.url)
+					uci:set("service_weburl", id, "description", service.description or "")
+
+					if uci:save() and uci:commit() then
+						e.success = true
+					else
+						e.error = "Failed to save configuration"
+					end
+				else
+					e.error = "Service not found"
+				end
+			else
+				e.error = "Invalid service data"
+			end
+		else
+			e.error = "No data received"
+		end
+	else
+		e.error = "Missing service ID"
+	end
+
+	http.prepare_content("application/json")
+	http.write_json(e)
+end
+
+function action_delete_service(id)
+	local uci = require "luci.model.uci".cursor()
+	local http = luci.http
+	local e = {success = false}
+
+	if id then
+		if uci:get("service_weburl", id) then
+			uci:delete("service_weburl", id)
+			if uci:save() and uci:commit() then
+				e.success = true
+			else
+				e.error = "Failed to save configuration"
+			end
+		else
+			e.error = "Service not found"
+		end
+	else
+		e.error = "Missing service ID"
+	end
+
+	http.prepare_content("application/json")
+	http.write_json(e)
+end
