@@ -47,10 +47,10 @@ function action_invalidate_cache()
 end
 
 -- 服务管理API
-entry({"admin", "services", "service_weburl", "services"}, call("action_list_services")).leaf = true
-entry({"admin", "services", "service_weburl", "services"}, call("action_add_service")).leaf = true
-entry({"admin", "services", "service_weburl", "services", ":id"}, call("action_update_service")).leaf = true
-entry({"admin", "services", "service_weburl", "services", ":id"}, call("action_delete_service")).leaf = true
+entry({"admin", "services", "service_weburl", "services"}, template("action_list_services")).leaf = true
+entry({"admin", "services", "service_weburl", "services"}, template("action_add_service")).leaf = true
+entry({"admin", "services", "service_weburl", "services", ":id"}, template("action_update_service")).leaf = true
+entry({"admin", "services", "service_weburl", "services", ":id"}, template("action_delete_service")).leaf = true
 
 function action_list_services()
 	local uci = require "luci.model.uci".cursor()
