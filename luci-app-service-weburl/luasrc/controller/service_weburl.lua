@@ -12,6 +12,12 @@ function index()
 	entry({ "admin", "services", "service_weburl", "client" }, cbi("service_weburl/client"), _("Settings"), 10).leaf = true -- 客户端配置
 	entry({ "admin", "services", "service_weburl", "log" }, form("service_weburl/log"), _("Log"), 30).leaf = true -- 日志页面
 
+	-- 服务管理API
+	entry({"admin", "services", "service_weburl", "services"}, call("action_list_services")).leaf = true
+	entry({"admin", "services", "service_weburl", "services"}, call("action_add_service")).leaf = true
+	entry({"admin", "services", "service_weburl", "services", ":id"}, call("action_update_service")).leaf = true
+	entry({"admin", "services", "service_weburl", "services", ":id"}, call("action_delete_service")).leaf = true
+
 	entry({ "admin", "services", "service_weburl", "status" }, call("action_status")).leaf = true -- 运行状态
 	entry({ "admin", "services", "service_weburl", "logtail" }, call("action_logtail")).leaf = true -- 日志采集
 	entry({ "admin", "services", "service_weburl", "invalidate-cache" }, call("action_invalidate_cache")).leaf = true -- 清除缓存
@@ -45,12 +51,6 @@ function action_invalidate_cache()
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(e)
 end
-
--- 服务管理API
-entry({"admin", "services", "service_weburl", "services"}, template("action_list_services")).leaf = true
-entry({"admin", "services", "service_weburl", "services"}, template("action_add_service")).leaf = true
-entry({"admin", "services", "service_weburl", "services", ":id"}, template("action_update_service")).leaf = true
-entry({"admin", "services", "service_weburl", "services", ":id"}, template("action_delete_service")).leaf = true
 
 function action_list_services()
 	local uci = require "luci.model.uci".cursor()
